@@ -1,0 +1,467 @@
+package com.robot.baseapi.FileDownloader;
+
+import android.app.Application;
+import android.content.ContentValues;
+import android.content.Intent;
+import android.support.annotation.NonNull;
+
+
+import com.ayit.klog.KLog;
+import com.robot.baseapi.db.ConditionBuilder;
+import com.robot.baseapi.db.DbUtil;
+import com.zhy.http.okhttp.OkHttpUtils;
+
+import java.io.File;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import okhttp3.Call;
+
+public class OkDlManager implements IOkDlManager {
+
+
+    private static int TASK_COUNT = 2;
+
+
+    private static OkDlManager manager;
+//    private Context mContext;
+    private int taskCount;
+    private Map<Integer, OkDlListener> listenerMap;
+
+    private Map<String, OkFileCallBack> callBackMap;
+
+
+    public boolean addDlListener(int flag, OkDlListener dlListener) {
+        if (listenerMap.containsKey(flag)) {
+            return false;
+        } else {
+            listenerMap.put(flag, dlListener);
+            return true;
+        }
+    }
+
+
+    public OkDlListener getListener(int flag) {
+        return listenerMap.get(flag);
+    }
+
+    public void removeDlListener(int flag) {
+        listenerMap.remove(flag);
+    }
+
+    public static OkDlManager getInstance() {
+        if (manager == null) {
+            synchronized (OkDlManager.class) {
+                if (manager == null) {
+                    manager = new OkDlManager();
+                }
+            }
+        }
+        return manager;
+    }
+
+    @Override
+    public List<OkDlTask> getAll() {
+        return DbUtil.findAll(OkDlTask.class);
+    }
+
+    @Override
+    public List<OkDlTask> getAll(int flag) {
+        return DbUtil.find(OkDlTask.class,
+                ConditionBuilder.getInstance()
+                        .start()
+                        .addCondition(OkDlTask.Field.flag, String.valueOf(flag)).end());
+    }
+
+
+    @Override
+    public OkDlTask get(String url) {
+        return DbUtil.findFirst(OkDlTask.class, ConditionBuilder.getInstance().start().addCondition(OkDlTask.Field.url, url).end());
+    }
+
+    @Override
+    public void add(int flag, String url, String dir) {
+        String[] split = url.split("/");
+        String fileName = split[split.length - 1];
+        add(flag, url, dir, fileName);
+    }
+
+
+    @Override
+    public void add(int flag, String url, String dir, String fileName) {
+        OkDlTask task = DbUtil.findFirst(OkDlTask.class,
+                ConditionBuilder.getInstance()
+                        .start()
+                        .addCondition(OkDlTask.Field.url, url).end());
+        if (task == null) {
+            task = new OkDlTask(flag, url, dir, fileName);
+            DbUtil.save(task);
+        } else {
+            File file = new File(task.getLocalPath());
+            if (!file.exists()) {
+                task.setCurrentLength(0);
+            }
+            updateStatusByUrl(task.getUrl(), OkDlTask.Status.STATUS_WAITING);
+        }
+        newCall(task);
+    }
+
+    @Override
+    public void cancle(String url) {
+        OkHttpUtils.getInstance().cancelTag(url);
+        OkDlTask first = DbUtil.findFirst(OkDlTask.class,
+                ConditionBuilder.getInstance()
+                        .start()
+                        .addCondition(OkDlTask.Field.url, url).end());
+        KLog.d("cancle : first _ " + first);
+        if (first != null) {
+            first.setCurrentLength(0);
+            first.setTotalLength(0);
+
+            switch (first.getStatus()) {
+                case OkDlTask.Status.STATUS_DOWNLOADING:
+                    callBackMap.get(url).setStatus(OkDlTask.Status.STATUS_DISCARD);
+                    break;
+                case OkDlTask.Status.STATUS_ERROR:
+                case OkDlTask.Status.STATUS_PAUSE:
+                case OkDlTask.Status.STATUS_WAITING:
+                    //存在文件和待执行任务，删除任务，并删除文件
+                    if (getListener(first.getFlag()) != null) {
+                        first.setStatus(OkDlTask.Status.STATUS_DISCARD);
+                        getListener(first.getFlag()).onCancle(first);
+                    }
+                    int count = DbUtil.delete(OkDlTask.class,
+                            ConditionBuilder.getInstance()
+                                    .start()
+                                    .addCondition(OkDlTask.Field.url, url).end());
+                    KLog.d("count : " + count);
+                    deleteFile(first);
+                    break;
+            }
+        }
+    }
+
+    @Override
+    public void cancleAll() {
+        List<OkDlTask> all = getAll();
+        for (OkDlTask task : all){
+            cancle(task.getUrl());
+        }
+    }
+
+    @Override
+    public void pause(@NonNull String url) {
+        OkDlTask first = DbUtil.findFirst(OkDlTask.class,
+                ConditionBuilder.getInstance()
+                        .start()
+                        .addCondition(OkDlTask.Field.url, url).end());
+        if (first != null) {
+            switch (first.getStatus()) {
+                case OkDlTask.Status.STATUS_DOWNLOADING:
+                    callBackMap.get(url).setStatus(OkDlTask.Status.STATUS_PAUSE);
+                    break;
+                case OkDlTask.Status.STATUS_WAITING:
+                    updateStatusByUrl(url, OkDlTask.Status.STATUS_WAITING);
+                    break;
+            }
+        }
+
+    }
+    @Override
+    public void pauseAll(){
+        List<OkDlTask> waittingTasks = DbUtil.find(OkDlTask.class,
+                ConditionBuilder.getInstance()
+                        .start()
+                        .addCondition(OkDlTask.Field.status, String.valueOf(OkDlTask.Status.STATUS_WAITING)).end());
+        for (OkDlTask task : waittingTasks){
+            OkDlManager.getInstance().pause(task.getUrl());
+        }
+
+
+        List<OkDlTask> dlingTasks = DbUtil.find(OkDlTask.class,
+                ConditionBuilder.getInstance()
+                        .start()
+                        .addCondition(OkDlTask.Field.status, String.valueOf(OkDlTask.Status.STATUS_DOWNLOADING)).end());
+        for (OkDlTask task : dlingTasks){
+            OkDlManager.getInstance().pause(task.getUrl());
+        }
+    }
+
+    private void deleteFile(OkDlTask task) {
+        File file = new File(task.getLocalPath());
+        if (file.exists()) {
+            file.delete();
+        }
+    }
+
+//    /**
+//     * 初始化  默认 开启两个任务并行
+//     *
+//     * @param context
+//     */
+//    public void init(Context context) {
+//        init(context, TASK_COUNT);
+//    }
+//
+//    /**
+//     * @param context
+//     * @param parallelTaskCount 并行任务数
+//     */
+//    public  void init(Context context, int parallelTaskCount) {
+//        this.mContext = context;
+//        this.TASK_COUNT = parallelTaskCount;
+//        this.taskCount = 0;
+//    }
+
+    public void init(int parallelTaskCount){
+        this.TASK_COUNT = parallelTaskCount;
+        this.taskCount = 0;
+    }
+
+    /**
+     *
+     * @param application
+     */
+    public static void init(@NonNull Application application){
+       init(application,TASK_COUNT);
+    }
+
+    /**
+     *
+     * @param application
+     * @param parallelTaskCount
+     */
+    public static void init(@NonNull Application application, int parallelTaskCount){
+
+//        Intent serviceIntent = new Intent(application, OkDlService.class);
+
+        Intent serviceIntent = new Intent("okdlservice");
+        serviceIntent.setPackage("com.ayit.downloader");
+        serviceIntent.putExtra("task_count",parallelTaskCount);
+//
+//        PendingIntent contentIntent = PendingIntent.getActivity(application, 0,
+//                serviceIntent, 0);
+//        Notification notification = new Notification.Builder(application)
+//                .setContentTitle("Foreground Service")
+//                .setContentText("Foreground Service Started.")
+//                .setSmallIcon(R.mipmap.ic_launcher).setLargeIcon()
+//                .build();
+//        notification.contentIntent = contentIntent;
+        application.startService(serviceIntent);
+    }
+
+    @Override
+    public void onCreate() {
+        callBackMap = new HashMap<>();
+        listenerMap = new HashMap<>();
+//        List<OkDlTask> all = DbUtil.find(OkDlTask.class, ConditionBuilder.getInstance()
+//                .start()
+//                .addCondition(OkDlTask.Field.status, String.valueOf(OkDlTask.Status.STATUS_DOWNLOADING))
+//                .or()
+//                .addCondition(OkDlTask.Field.status, String.valueOf(OkDlTask.Status.STATUS_WAITING))
+//                .end());
+//        if (all == null || all.isEmpty()) {
+//            //没有遗留任务
+//        } else {
+//            //有遗留任务
+//
+//        }
+        //处理上次遗留的下载任务,重置为 停止状态
+        ContentValues values = new ContentValues();
+        values.put(OkDlTask.Field.status, OkDlTask.Status.STATUS_PAUSE);
+        DbUtil.update(OkDlTask.class,
+                values,
+                ConditionBuilder.getInstance()
+                        .start()
+                        .addCondition(OkDlTask.Field.status, String.valueOf(OkDlTask.Status.STATUS_WAITING))
+                        .or()
+                        .addCondition(OkDlTask.Field.status, String.valueOf(OkDlTask.Status.STATUS_DOWNLOADING))
+                        .end());
+
+    }
+
+    private void updateStatusByUrl(String url, int status) {
+        ContentValues values = new ContentValues();
+        values.put(OkDlTask.Field.status, status);
+        DbUtil.update(OkDlTask.class,
+                values,
+                ConditionBuilder.getInstance()
+                        .start()
+                        .addCondition(OkDlTask.Field.url, url)
+                        .end());
+    }
+
+    private void deleteByUrl(String url) {
+        DbUtil.delete(OkDlTask.class,
+                ConditionBuilder.getInstance()
+                        .start()
+                        .addCondition(OkDlTask.Field.url, url)
+                        .end());
+    }
+
+
+    private void newCall(final OkDlTask task) {
+
+        if (getListener(task.getFlag()) != null) {
+            task.setStatus(OkDlTask.Status.STATUS_WAITING);
+            ContentValues values = new ContentValues();
+            values.put(OkDlTask.Field.status, task.getStatus());
+            DbUtil.update(OkDlTask.class, values,
+                    ConditionBuilder.getInstance()
+                            .start()
+                            .addCondition(OkDlTask.Field.url, task.getUrl()).end());
+            getListener(task.getFlag()).onPrepare(task);
+        }
+        if (taskCount >= TASK_COUNT) {
+            return;
+        }
+        taskCount++;
+        if (getListener(task.getFlag()) != null) {
+            task.setStatus(OkDlTask.Status.STATUS_DOWNLOADING);
+            ContentValues values = new ContentValues();
+            values.put(OkDlTask.Field.status, task.getStatus());
+            DbUtil.update(OkDlTask.class, values,
+                    ConditionBuilder.getInstance()
+                            .start()
+                            .addCondition(OkDlTask.Field.url, task.getUrl()).end());
+            getListener(task.getFlag()).onPrepare(task);
+        }
+        KLog.d("RANGE" + " : " + "bytes=" + task.getCurrentLength() + "-" + task.getUrl());
+        OkFileCallBack callback = null;
+        OkHttpUtils.get()
+                .url(task.getUrl())
+                .tag(task.getUrl())
+                .addHeader("RANGE", "bytes=" + task.getCurrentLength() + "-")
+                .build()
+                .execute(
+//                        String destFileDir, String destFileName
+                        callback = new OkFileCallBack(task.getDir(), task.getFileName(), task.getCurrentLength()) {
+                            @Override
+                            public void onError(Call call, Exception e, int id) {
+                                if (this.isCancle()) {
+                                    switch (this.getStatus()) {
+                                        case OkDlTask.Status.STATUS_PAUSE:
+                                            task.setStatus(OkDlTask.Status.STATUS_PAUSE);
+                                            if (getListener(task.getFlag()) != null) {
+                                                getListener(task.getFlag()).onStop(task);
+                                            }
+                                            updateStatusByUrl(task.getUrl(), task.getStatus());
+                                            break;
+                                        case OkDlTask.Status.STATUS_DISCARD:
+                                            task.setStatus(OkDlTask.Status.STATUS_DISCARD);
+                                            task.setTotalLength(0);
+                                            task.setCurrentLength(0);
+                                            if (getListener(task.getFlag()) != null) {
+                                                getListener(task.getFlag()).onCancle(task);
+                                            }
+                                            deleteByUrl(task.getUrl());
+                                            break;
+                                    }
+                                } else {
+                                    if (getListener(task.getFlag()) != null) {
+                                        task.setStatus(OkDlTask.Status.STATUS_ERROR);
+                                        updateStatusByUrl(task.getUrl(), task.getStatus());
+                                        getListener(task.getFlag()).onError(task, e.getMessage());
+                                    }
+                                }
+
+                            }
+
+                            @Override
+                            public void onResponse(File response, int id) {
+                                if (getListener(task.getFlag()) != null) {
+                                    if (this.isCancle()) {
+                                        switch (this.getStatus()) {
+                                            case OkDlTask.Status.STATUS_PAUSE:
+                                                task.setStatus(OkDlTask.Status.STATUS_PAUSE);
+                                                if (getListener(task.getFlag()) != null) {
+                                                    getListener(task.getFlag()).onStop(task);
+                                                }
+                                                updateStatusByUrl(task.getUrl(), task.getStatus());
+                                                break;
+                                            case OkDlTask.Status.STATUS_DISCARD:
+                                                task.setStatus(OkDlTask.Status.STATUS_DISCARD);
+                                                task.setTotalLength(0);
+                                                task.setCurrentLength(0);
+                                                if (getListener(task.getFlag()) != null) {
+                                                    getListener(task.getFlag()).onCancle(task);
+                                                }
+                                                deleteByUrl(task.getUrl());
+                                                break;
+                                        }
+                                    } else {
+                                        task.setStatus(OkDlTask.Status.STATUS_SUCCESS);
+                                        if (getListener(task.getFlag()) != null) {
+                                            getListener(task.getFlag()).onFinish(task);
+                                        }
+                                        deleteByUrl(task.getUrl());
+                                    }
+                                }
+                            }
+
+
+                            @Override
+                            public void inProgressSubThread(long currentLenght, long totalLength) {
+                                task.setCurrentLength(currentLenght);
+                                ContentValues values = new ContentValues();
+                                values.put(OkDlTask.Field.currentLength, task.getCurrentLength());
+//                                values.put(OkDlTask.Field.totalLength,totalLength);
+                                DbUtil.update(OkDlTask.class, values,
+                                        ConditionBuilder.getInstance()
+                                                .start()
+                                                .addCondition(OkDlTask.Field.url, task.getUrl()).end());
+                            }
+
+                            @Override
+                            public void onStart(long totalLength) {
+                                task.setTotalLength(totalLength);
+                                ContentValues values = new ContentValues();
+//                                values.put(OkDlTask.Field.currentLength,currentLenght);
+                                values.put(OkDlTask.Field.totalLength, task.getTotalLength());
+
+                                DbUtil.update(OkDlTask.class, values,
+                                        ConditionBuilder.getInstance()
+                                                .start()
+                                                .addCondition(OkDlTask.Field.url, task.getUrl()).end());
+                                if (getListener(task.getFlag()) != null) {
+                                    getListener(task.getFlag()).onPrepare(task);
+                                }
+                            }
+
+                            @Override
+                            public void inProgress(float progress, long total, int id) {
+                                super.inProgress(progress, total, id);
+                                if (getListener(task.getFlag()) != null) {
+                                    getListener(task.getFlag()).onProgress(task);
+                                }
+                            }
+
+                            @Override
+                            public void onAfter(int id) {
+                                super.onAfter(id);
+                                taskCount--;
+                                callBackMap.remove(task.getUrl());
+                                OkDlTask first = DbUtil.findFirst(OkDlTask.class,
+                                        ConditionBuilder.getInstance()
+                                                .start()
+                                                .addCondition(OkDlTask.Field.status, String.valueOf(OkDlTask.Status.STATUS_WAITING)).end());
+                                if (first != null) {
+                                    add(first.getFlag(), first.getUrl(), first.getDir(), first.getFileName());
+                                }
+
+                            }
+                        }
+                );
+        callBackMap.put(task.getUrl(), callback);
+    }
+
+
+    @Override
+    public void onDestory() {
+        pauseAll();
+        OkHttpUtils.getInstance().cancelTag(null);
+    }
+
+
+}

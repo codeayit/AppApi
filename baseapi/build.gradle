@@ -1,0 +1,50 @@
+apply plugin: 'com.android.library'
+// add these
+//apply plugin: 'com.github.dcendents.android-maven'
+
+android {
+    compileSdkVersion 27
+    defaultConfig {
+        minSdkVersion 19
+        targetSdkVersion 27
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
+        javaCompileOptions {
+            // 显式声明支持注解
+            annotationProcessorOptions {
+                includeCompileClasspath true
+            }
+        }
+    }
+
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    implementation 'com.android.support:appcompat-v7:27.+'
+    testImplementation 'junit:junit:4.12'
+
+    api 'org.litepal.android:core:2.0.0'
+    api 'com.squareup.picasso:picasso:2.5.2'
+    api 'com.zhy:okhttputils:2.6.2'
+    api 'com.alibaba:fastjson:1.2.38'
+    api 'com.github.1053452188:LoadingLayout:c7ce7dbd4d'
+    api 'com.mylhyl:acp:1.1.7'
+    api 'com.zhy:percent-support-extends:1.1.1'
+    api 'com.github.1053452188:CrashSimple:98a1030565'
+    api 'com.android.support:multidex:1.0.3'
+    api 'com.github.1053452188:simpleklog:2bc9effebd'
+}
