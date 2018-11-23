@@ -30,7 +30,8 @@ dependencies {
     implementation 'com.android.support:appcompat-v7:27.+'
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
     testImplementation 'junit:junit:4.12'
-    api project(':baseapi')
+//    api project(':baseapi')
+    implementation 'com.github.codeayit:AppApi:e226236e4e'
 //    implementation 'com.github.codeayit:BAA:d328ecc9cd'
 //    implementation 'com.github.codeayit:BaseAppApi:d328ecc9cd'
 //    implementation 'com.github.1053452188:BaseAppApi:209521ee56'
