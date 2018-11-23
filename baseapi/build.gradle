@@ -48,5 +48,5 @@ dependencies {
     api 'com.android.support:multidex:1.0.3'
     api 'com.github.1053452188:simpleklog:2bc9effebd'
     api 'com.zhy:base-rvadapter:3.0.3'
-    implementation 'com.android.support:recyclerview-v7:27.1.1'
+    api 'com.android.support:recyclerview-v7:27.1.1'
 }

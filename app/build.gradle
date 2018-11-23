@@ -30,9 +30,7 @@ dependencies {
     implementation 'com.android.support:appcompat-v7:27.+'
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
     testImplementation 'junit:junit:4.12'
-//    api project(':baseapi')
-//    implementation 'com.github.codeayit:AppApi:e226236e4e'
-    implementation 'com.github.codeayit:AppApi:f58cf06e0d'
+    api project(':baseapi')
     implementation 'com.jakewharton:butterknife:8.4.0'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.4.0'
 
