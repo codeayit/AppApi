@@ -5,7 +5,7 @@ import android.widget.Toast;
 
 import com.ayit.klog.KLog;
 import com.robot.baseapi.base.BaseApplication;
-import com.robot.baseapi.net.GlobalCodeFilter;
+import com.robot.baseapi.net.GlobalFilter;
 import com.robot.baseapi.net.NetWork;
 
 /**
@@ -17,7 +17,7 @@ public class ApiApplication extends BaseApplication {
     public void onCreate() {
         super.onCreate();
 
-        NetWork.setGlobalCodeFilter(new GlobalCodeFilter() {
+        NetWork.setGlobalCodeFilter(new GlobalFilter() {
             @Override
             public void onCode(int code,String json) {
                 KLog.d("全局code 过滤： "+code);

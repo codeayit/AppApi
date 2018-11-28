@@ -2,20 +2,16 @@ package com.robot.baseapi.net;
 
 import android.app.Dialog;
 import android.content.Context;
-import android.os.Build;
 import android.view.View;
-import android.widget.Toast;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.ayit.klog.KLog;
 import com.ayti.loadinglayout.BaseLoadingLayout;
 import com.ayti.loadinglayout.OnPageContentClickListener;
-import com.robot.baseapi.util.NetworkUtil;
 import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.builder.OkHttpRequestBuilder;
 import com.zhy.http.okhttp.callback.StringCallback;
-import com.zhy.http.okhttp.request.OkHttpRequest;
 import com.zhy.http.okhttp.request.RequestCall;
 
 import java.util.HashMap;
@@ -23,60 +19,57 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import okhttp3.Call;
-import okhttp3.Headers;
 import okhttp3.MediaType;
 import okhttp3.Request;
-import okhttp3.RequestBody;
 
 /**
  * Created by lny on 2017/10/16.
  */
 
 public class NetWork {
-    private static NetWork instance;
-    private Context mContext;
-    private String mUrl;
-    private Map mParams;
-    private Map mHeaders;
-    private Object mTag;
-    private Dialog mDialog;
-    private boolean isLog;
-    private boolean isPost;
-    private PostType postType;
-    private boolean isLogJson;
-    private boolean isPublicParms;
-    private boolean isPublicHeaders;
-    private boolean isCheckNet;
-    private boolean isSign;
-    private boolean isGlobalCodeFilter;
+    public static NetWork instance;
+    public String mUrl;
+    public HashMap<String, String> mParams;
+    public HashMap<String, String> mHeaders;
+    public Object mTag;
+    public Dialog mDialog;
+    public boolean isLog;
+    public boolean isPost;
+    public PostType postType;
+    public boolean isLogJson;
+    public boolean isPublicParms;
+    public boolean isPublicHeaders;
+    public boolean isCheckNet;
+    public boolean isSign;
+    public boolean isGlobalFilter;
     private JSONObject logInfo;
-    private BaseLoadingLayout mLoadingLayout;
-    private NetWorkStringCallBack mNetWorkStringCallBack;
-    private MediaType mContentType;
+    public BaseLoadingLayout mLoadingLayout;
+    public NetWorkStringCallBack mNetWorkStringCallBack;
+    public MediaType mContentType;
 
-    private NetWorkExecute netWorkExecute;
+    public NetWorkExecute netWorkExecute;
 
-    private static Map<String, String> mPublicParams;
-    private static Map<String, String> mPublicHeaders;
+    public static Map<String, String> mPublicParams;
+    public static Map<String, String> mPublicHeaders;
 
-    private static SignCallback globalSignCallback;
-    private SignCallback signCallback;
+    public static SignCallback globalSignCallback;
+    public SignCallback signCallback;
 
     private static NetCallback globalNetCallback;
-    private static GlobalCodeFilter globalCodeFilter;
+    private static GlobalFilter globalFilter;
     private NetCallback netCallback;
 
 
-    public static void setGlobalSignCallback(SignCallback globalSignCallback) {
-        NetWork.globalSignCallback = globalSignCallback;
-    }
+//    public static void setGlobalSignCallback(SignCallback globalSignCallback) {
+//        NetWork.globalSignCallback = globalSignCallback;
+//    }
 
     public static void setGlobalNetCallback(NetCallback globalNetCallback) {
         NetWork.globalNetCallback = globalNetCallback;
     }
 
-    public static void setGlobalCodeFilter(GlobalCodeFilter globalCodeFilter) {
-        NetWork.globalCodeFilter = globalCodeFilter;
+    public static void setGlobalFilter(GlobalFilter globalFilter) {
+        NetWork.globalFilter = globalFilter;
     }
 
     /**
@@ -96,6 +89,7 @@ public class NetWork {
     public static NetWork getInstance(Context context) {
         return new NetWork(context);
     }
+
     public static NetWork getInstance(Object mTag) {
         return new NetWork(mTag);
     }
@@ -113,12 +107,12 @@ public class NetWork {
         init();
     }
 
-    @Deprecated
-    public NetWork(Context context) {
-        mContext = context;
-        mTag = context;
-        init();
-    }
+//    @Deprecated
+//    public NetWork(Context context) {
+//        mContext = context;
+//        mTag = context;
+//        init();
+//    }
 
     private void init() {
         mParams = new HashMap<String, String>();
@@ -127,8 +121,7 @@ public class NetWork {
         isLogJson = true;
         isPublicParms = true;
         isPublicHeaders = true;
-        isSign = true;
-        isGlobalCodeFilter = true;
+        isGlobalFilter = true;
         logInfo = new JSONObject(new LinkedHashMap<String, Object>());
         isPost = true;
         isCheckNet = false;
@@ -202,7 +195,7 @@ public class NetWork {
         }
 
         public NetWorkParamsTagBulider postStringObject(Object object) {
-            mParams.put("postString", JSON.toJSON(object));
+            mParams.put("postString", JSON.toJSONString(object));
             return this;
         }
 
@@ -346,7 +339,7 @@ public class NetWork {
          * @return
          */
         public NetWorkParamsTagBulider globalCodeFilter(boolean gobalCodeFilter) {
-            NetWork.this.isGlobalCodeFilter = gobalCodeFilter;
+            NetWork.this.isGlobalFilter = gobalCodeFilter;
             return this;
         }
 
@@ -373,10 +366,6 @@ public class NetWork {
         }
     }
 
-    @Deprecated
-    public Context getContext() {
-        return mContext;
-    }
 
     /**
      * 执行网络操作
@@ -388,14 +377,14 @@ public class NetWork {
 
             if (isCheckNet) {
                 //判断是否链接wifi
-                if (!NetworkUtil.isWifiConnected(getContext()) && !NetworkUtil.isMobileDataEnable(getContext()) && !NetworkUtil.isInternet(getContext())) {
-                    if (netCallback != null) {
-                        netCallback.onWifiDisable();
-                    } else if (globalNetCallback != null) {
-                        globalNetCallback.onWifiDisable();
-                    }
-                    return;
-                }
+//                if (!NetworkUtil.isWifiConnected(getContext()) && !NetworkUtil.isMobileDataEnable(getContext()) && !NetworkUtil.isInternet(getContext())) {
+//                    if (netCallback != null) {
+//                        netCallback.onWifiDisable();
+//                    } else if (globalNetCallback != null) {
+//                        globalNetCallback.onWifiDisable();
+//                    }
+//                    return;
+//                }
 
             }
 
@@ -414,11 +403,17 @@ public class NetWork {
                 }
             }
 
+            if (isGlobalFilter) {
+                if (globalFilter != null) {
+                    globalFilter.onPreRequest(mUrl, mHeaders, mParams);
+                }
+            }
+
             if (isSign) {
                 if (signCallback != null) {
-                    signCallback.sign(mHeaders, mParams);
+                    signCallback.sign(mUrl, mHeaders, mParams);
                 } else if (globalSignCallback != null) {
-                    globalSignCallback.sign(mHeaders, mParams);
+                    globalSignCallback.sign(mUrl, mHeaders, mParams);
                 }
             }
 
@@ -507,9 +502,9 @@ public class NetWork {
                         if (isLog) {
                             outLog(logInfo.toJSONString());
                         }
-                        if (isGlobalCodeFilter) {
-                            if (globalCodeFilter != null) {
-                                globalCodeFilter.onCode(o.getInteger("code"), json);
+                        if (isGlobalFilter) {
+                            if (globalFilter != null) {
+                                globalFilter.onPreResponse(o.getInteger("code"), json);
                             }
                         }
                     } catch (Exception e) {
