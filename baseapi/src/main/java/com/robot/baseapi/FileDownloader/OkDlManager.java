@@ -236,8 +236,8 @@ public class OkDlManager implements IOkDlManager {
 
 //        Intent serviceIntent = new Intent(application, OkDlService.class);
 
-        Intent serviceIntent = new Intent("okdlservice");
-        serviceIntent.setPackage("com.robot.baseapi");
+        Intent serviceIntent = new Intent(application,OkDlService.class);
+//        serviceIntent.setPackage("com.robot.baseapi");
         serviceIntent.putExtra("task_count",parallelTaskCount);
 //
 //        PendingIntent contentIntent = PendingIntent.getActivity(application, 0,
