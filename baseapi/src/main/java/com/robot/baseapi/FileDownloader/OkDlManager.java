@@ -24,10 +24,13 @@ public class OkDlManager {
 
     private static int TASK_COUNT = 2;
 
+    private static long PROGRESS_DURATION = 1000;
+
 
     private static OkDlManager manager;
     //    private Context mContext;
     private int taskCount;
+    private int progressDuration;
     private Map<Integer, OkDlListener> listenerMap;
 
     private Map<String, OkFileCallBack> callBackMap;
@@ -238,27 +241,10 @@ public class OkDlManager {
         }
     }
 
-//    /**
-//     * 初始化  默认 开启两个任务并行
-//     *
-//     * @param context
-//     */
-//    public void init(Context context) {
-//        init(context, TASK_COUNT);
-//    }
-//
-//    /**
-//     * @param context
-//     * @param parallelTaskCount 并行任务数
-//     */
-//    public  void init(Context context, int parallelTaskCount) {
-//        this.mContext = context;
-//        this.TASK_COUNT = parallelTaskCount;
-//        this.taskCount = 0;
-//    }
 
-    protected void init(int parallelTaskCount) {
+    protected void init(int parallelTaskCount,long progressDuration) {
         this.TASK_COUNT = parallelTaskCount;
+        this.PROGRESS_DURATION = progressDuration;
         this.taskCount = 0;
     }
 
@@ -267,17 +253,18 @@ public class OkDlManager {
      */
     public static void init(@NonNull Application application) {
         mApplication = application;
-        init(application, TASK_COUNT);
+        init(application, TASK_COUNT,PROGRESS_DURATION);
     }
 
     /**
      * @param application
      * @param parallelTaskCount
      */
-    public static void init(@NonNull Application application, int parallelTaskCount) {
+    public static void init(@NonNull Application application, int parallelTaskCount,long progressDuration) {
         Intent serviceIntent = new Intent(application, OkDlService.class);
         serviceIntent.putExtra("action","init");
         serviceIntent.putExtra("task_count", parallelTaskCount);
+        serviceIntent.putExtra("progress_duration",progressDuration);
         application.startService(serviceIntent);
     }
 
@@ -468,6 +455,7 @@ public class OkDlManager {
                             }
                         }
                 );
+        callback.setProgressDuration(progressDuration);
         callBackMap.put(task.getUrl(), callback);
     }
 

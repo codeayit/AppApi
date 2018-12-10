@@ -34,11 +34,14 @@ public abstract class OkFileCallBack extends Callback<File> {
      */
     private long startsPoint;
 
+    private long progressDuration;
+
 
     public OkFileCallBack(String destFileDir, String destFileName) {
         status = 0;
         this.destFileDir = destFileDir;
         this.destFileName = destFileName;
+        this.progressDuration = 1000;
     }
 
     public OkFileCallBack(String destFileDir, String destFileName, long startsPoint) {
@@ -46,6 +49,11 @@ public abstract class OkFileCallBack extends Callback<File> {
         this.destFileName = destFileName;
         this.startsPoint = startsPoint;
         status = 0;
+        this.progressDuration = 1000;
+    }
+
+    public void setProgressDuration(long progressDuration) {
+        this.progressDuration = progressDuration;
     }
 
     public void setStatus(int status) {
@@ -174,7 +182,7 @@ public abstract class OkFileCallBack extends Callback<File> {
                 final long finalSum = sum;
                 mappedBuffer.put(buffer, 0, len);
                 inProgressSubThread(finalSum, total);
-                if (System.currentTimeMillis() - startTime > 1000) {
+                if (System.currentTimeMillis() - startTime > progressDuration) {
                     OkHttpUtils.getInstance().getDelivery().execute(new Runnable() {
                         @Override
                         public void run() {

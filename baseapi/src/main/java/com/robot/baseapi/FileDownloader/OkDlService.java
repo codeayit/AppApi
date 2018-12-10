@@ -33,7 +33,7 @@ public class OkDlService extends BaseService {
             String action = intent.getStringExtra("action");
             switch (action){
                 case "init":
-                    okDlManager.init(intent.getIntExtra("task_count",2));
+                    okDlManager.init(intent.getIntExtra("task_count",2),intent.getIntExtra("progress_duration",1000));
                     break;
                 case "add":
                     okDlManager.add(
