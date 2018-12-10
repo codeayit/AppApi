@@ -67,10 +67,17 @@ public class OkDlManager {
         return manager;
     }
 
+    public List<OkDlTask> getAllTask(){
+        return getAll();
+    }
+
     protected List<OkDlTask> getAll() {
         return DbUtil.findAll(OkDlTask.class);
     }
 
+    public List<OkDlTask> getAllTask(int flag){
+        return getAll(flag);
+    }
     protected List<OkDlTask> getAll(int flag) {
         return DbUtil.find(OkDlTask.class,
                 ConditionBuilder.getInstance()
@@ -78,7 +85,9 @@ public class OkDlManager {
                         .addCondition(OkDlTask.Field.flag, String.valueOf(flag)).end());
     }
 
-
+    public OkDlTask getTask(String url){
+        return get(url);
+    }
     protected OkDlTask get(String url) {
         return DbUtil.findFirst(OkDlTask.class, ConditionBuilder.getInstance().start().addCondition(OkDlTask.Field.url, url).end());
     }
