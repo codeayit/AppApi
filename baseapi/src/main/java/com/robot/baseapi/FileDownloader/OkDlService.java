@@ -1,6 +1,7 @@
 package com.robot.baseapi.FileDownloader;
 
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.IBinder;
 
 import com.ayit.klog.KLog;
@@ -19,16 +20,44 @@ public class OkDlService extends BaseService {
         super.onCreate();
         okDlManager = OkDlManager.getInstance();
         okDlManager.onCreate();
-//        okDlManager.init(this);
         KLog.d("OkDlService:onCreate()");
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         KLog.d("OkDlService:onStartCommand()");
-        if (intent.getExtras()!=null && intent.getExtras().containsKey("task_count")){
-            okDlManager.init(intent.getIntExtra("task_count",2));
+
+        Bundle extras = intent.getExtras();
+
+        if (extras!=null&& extras.containsKey("action")){
+            String action = intent.getStringExtra("action");
+            switch (action){
+                case "init":
+                    okDlManager.init(intent.getIntExtra("task_count",2));
+                    break;
+                case "add":
+                    okDlManager.add(
+                            intent.getIntExtra("flag",0),
+                            intent.getStringExtra("url"),
+                            intent.getStringExtra("dir"),
+                            intent.getStringExtra("fileName")
+                    );
+                    break;
+                case "cancle":
+                    okDlManager.cancle(intent.getStringExtra("url"));
+                    break;
+                case "cancleAll":
+                    okDlManager.cancleAll();
+                    break;
+                case "pause":
+                    okDlManager.pause(intent.getStringExtra("url"));
+                    break;
+                case "pauseAll":
+                    okDlManager.pauseAll();
+                    break;
+            }
         }
+
         return super.onStartCommand(intent, flags, startId);
     }
 

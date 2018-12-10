@@ -18,27 +18,30 @@ import java.util.Map;
 
 import okhttp3.Call;
 
-public class OkDlManager implements IOkDlManager {
+public class OkDlManager {
 
+    private static Application mApplication;
 
     private static int TASK_COUNT = 2;
 
 
     private static OkDlManager manager;
-//    private Context mContext;
+    //    private Context mContext;
     private int taskCount;
     private Map<Integer, OkDlListener> listenerMap;
 
     private Map<String, OkFileCallBack> callBackMap;
 
 
-    public boolean addDlListener(int flag, OkDlListener dlListener) {
-        if (listenerMap.containsKey(flag)) {
-            return false;
-        } else {
-            listenerMap.put(flag, dlListener);
-            return true;
-        }
+    public OkDlManager() {
+        if (callBackMap == null)
+            callBackMap = new HashMap<>();
+        if (listenerMap == null)
+            listenerMap = new HashMap<>();
+    }
+
+    public void addDlListener(int flag, OkDlListener dlListener) {
+        listenerMap.put(flag, dlListener);
     }
 
 
@@ -61,13 +64,11 @@ public class OkDlManager implements IOkDlManager {
         return manager;
     }
 
-    @Override
-    public List<OkDlTask> getAll() {
+    protected List<OkDlTask> getAll() {
         return DbUtil.findAll(OkDlTask.class);
     }
 
-    @Override
-    public List<OkDlTask> getAll(int flag) {
+    protected List<OkDlTask> getAll(int flag) {
         return DbUtil.find(OkDlTask.class,
                 ConditionBuilder.getInstance()
                         .start()
@@ -75,21 +76,40 @@ public class OkDlManager implements IOkDlManager {
     }
 
 
-    @Override
-    public OkDlTask get(String url) {
+    protected OkDlTask get(String url) {
         return DbUtil.findFirst(OkDlTask.class, ConditionBuilder.getInstance().start().addCondition(OkDlTask.Field.url, url).end());
     }
 
-    @Override
-    public void add(int flag, String url, String dir) {
+
+    protected void add(int flag, String url, String dir) {
         String[] split = url.split("/");
         String fileName = split[split.length - 1];
         add(flag, url, dir, fileName);
     }
+    public void addTask(int flag,String url,String dir){
+        String[] split = url.split("/");
+        String fileName = split[split.length - 1];
+        add(flag, url, dir, fileName);
+       addTask(flag, url, dir, fileName);
+    }
+
+    public void addTask(int flag, String url, String dir, String fileName){
+        Intent intent = new Intent(mApplication,OkDlService.class);
+        intent.putExtra("action","add");
+        intent.putExtra("flag",flag);
+        intent.putExtra("url",url);
+        intent.putExtra("dir",dir);
+        intent.putExtra("fileName",fileName);
+        mApplication.startService(intent);
+    }
 
 
-    @Override
-    public void add(int flag, String url, String dir, String fileName) {
+    protected void add(int flag, String url, String dir, String fileName) {
+
+        File dirF = new File(dir);
+        if (!dirF.exists()) {
+            dirF.mkdirs();
+        }
         OkDlTask task = DbUtil.findFirst(OkDlTask.class,
                 ConditionBuilder.getInstance()
                         .start()
@@ -107,8 +127,14 @@ public class OkDlManager implements IOkDlManager {
         newCall(task);
     }
 
-    @Override
-    public void cancle(String url) {
+    public void cancleTask(String url){
+        Intent intent = new Intent(mApplication,OkDlService.class);
+        intent.putExtra("action","cancle");
+        intent.putExtra("url",url);
+        mApplication.startService(intent);
+    }
+
+    protected void cancle(String url) {
         OkHttpUtils.getInstance().cancelTag(url);
         OkDlTask first = DbUtil.findFirst(OkDlTask.class,
                 ConditionBuilder.getInstance()
@@ -142,16 +168,26 @@ public class OkDlManager implements IOkDlManager {
         }
     }
 
-    @Override
-    public void cancleAll() {
+    public void cancleAllTask(){
+        Intent intent = new Intent(mApplication,OkDlService.class);
+        intent.putExtra("action","cancleAll");
+        mApplication.startService(intent);
+    }
+
+    protected void cancleAll() {
         List<OkDlTask> all = getAll();
-        for (OkDlTask task : all){
+        for (OkDlTask task : all) {
             cancle(task.getUrl());
         }
     }
 
-    @Override
-    public void pause(@NonNull String url) {
+    public void pauseTask(@NonNull String url){
+        Intent intent = new Intent(mApplication,OkDlService.class);
+        intent.putExtra("action","pause");
+        intent.putExtra("url",url);
+        mApplication.startService(intent);
+    }
+    protected void pause(@NonNull String url) {
         OkDlTask first = DbUtil.findFirst(OkDlTask.class,
                 ConditionBuilder.getInstance()
                         .start()
@@ -168,13 +204,20 @@ public class OkDlManager implements IOkDlManager {
         }
 
     }
-    @Override
-    public void pauseAll(){
+
+
+    public void pauseAllTask(){
+        Intent intent = new Intent(mApplication,OkDlService.class);
+        intent.putExtra("action","pauseAll");
+        mApplication.startService(intent);
+    }
+
+    protected void pauseAll() {
         List<OkDlTask> waittingTasks = DbUtil.find(OkDlTask.class,
                 ConditionBuilder.getInstance()
                         .start()
                         .addCondition(OkDlTask.Field.status, String.valueOf(OkDlTask.Status.STATUS_WAITING)).end());
-        for (OkDlTask task : waittingTasks){
+        for (OkDlTask task : waittingTasks) {
             OkDlManager.getInstance().pause(task.getUrl());
         }
 
@@ -183,7 +226,7 @@ public class OkDlManager implements IOkDlManager {
                 ConditionBuilder.getInstance()
                         .start()
                         .addCondition(OkDlTask.Field.status, String.valueOf(OkDlTask.Status.STATUS_DOWNLOADING)).end());
-        for (OkDlTask task : dlingTasks){
+        for (OkDlTask task : dlingTasks) {
             OkDlManager.getInstance().pause(task.getUrl());
         }
     }
@@ -214,59 +257,32 @@ public class OkDlManager implements IOkDlManager {
 //        this.taskCount = 0;
 //    }
 
-    public void init(int parallelTaskCount){
+    protected void init(int parallelTaskCount) {
         this.TASK_COUNT = parallelTaskCount;
         this.taskCount = 0;
     }
 
     /**
-     *
      * @param application
      */
-    public static void init(@NonNull Application application){
-       init(application,TASK_COUNT);
+    public static void init(@NonNull Application application) {
+        mApplication = application;
+        init(application, TASK_COUNT);
     }
 
     /**
-     *
      * @param application
      * @param parallelTaskCount
      */
-    public static void init(@NonNull Application application, int parallelTaskCount){
-
-//        Intent serviceIntent = new Intent(application, OkDlService.class);
-
-        Intent serviceIntent = new Intent(application,OkDlService.class);
-//        serviceIntent.setPackage("com.robot.baseapi");
-        serviceIntent.putExtra("task_count",parallelTaskCount);
-//
-//        PendingIntent contentIntent = PendingIntent.getActivity(application, 0,
-//                serviceIntent, 0);
-//        Notification notification = new Notification.Builder(application)
-//                .setContentTitle("Foreground Service")
-//                .setContentText("Foreground Service Started.")
-//                .setSmallIcon(R.mipmap.ic_launcher).setLargeIcon()
-//                .build();
-//        notification.contentIntent = contentIntent;
+    public static void init(@NonNull Application application, int parallelTaskCount) {
+        Intent serviceIntent = new Intent(application, OkDlService.class);
+        serviceIntent.putExtra("action","init");
+        serviceIntent.putExtra("task_count", parallelTaskCount);
         application.startService(serviceIntent);
     }
 
-    @Override
-    public void onCreate() {
-        callBackMap = new HashMap<>();
-        listenerMap = new HashMap<>();
-//        List<OkDlTask> all = DbUtil.find(OkDlTask.class, ConditionBuilder.getInstance()
-//                .start()
-//                .addCondition(OkDlTask.Field.status, String.valueOf(OkDlTask.Status.STATUS_DOWNLOADING))
-//                .or()
-//                .addCondition(OkDlTask.Field.status, String.valueOf(OkDlTask.Status.STATUS_WAITING))
-//                .end());
-//        if (all == null || all.isEmpty()) {
-//            //没有遗留任务
-//        } else {
-//            //有遗留任务
-//
-//        }
+    protected void onCreate() {
+        getInstance();
         //处理上次遗留的下载任务,重置为 停止状态
         ContentValues values = new ContentValues();
         values.put(OkDlTask.Field.status, OkDlTask.Status.STATUS_PAUSE);
@@ -278,7 +294,6 @@ public class OkDlManager implements IOkDlManager {
                         .or()
                         .addCondition(OkDlTask.Field.status, String.valueOf(OkDlTask.Status.STATUS_DOWNLOADING))
                         .end());
-
     }
 
     private void updateStatusByUrl(String url, int status) {
@@ -457,7 +472,6 @@ public class OkDlManager implements IOkDlManager {
     }
 
 
-    @Override
     public void onDestory() {
         pauseAll();
         OkHttpUtils.getInstance().cancelTag(null);
