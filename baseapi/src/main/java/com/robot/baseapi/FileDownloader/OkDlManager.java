@@ -89,7 +89,7 @@ public class OkDlManager {
     public void addTask(int flag,String url,String dir){
         String[] split = url.split("/");
         String fileName = split[split.length - 1];
-        add(flag, url, dir, fileName);
+//        add(flag, url, dir, fileName);
        addTask(flag, url, dir, fileName);
     }
 
