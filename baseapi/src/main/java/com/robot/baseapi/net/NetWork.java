@@ -432,7 +432,7 @@ public class NetWork {
                         builder = OkHttpUtils
                                 .postString()
                                 .mediaType(mContentType)
-                                .content(JSON.toJSONString(mParams.get("postString")))
+                                .content(mParams.get("postString"))
                                 .headers(mHeaders);
                         break;
                 }
