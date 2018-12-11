@@ -261,7 +261,6 @@ public class OkDlManager {
      * @param application
      */
     public static void init(@NonNull Application application) {
-        mApplication = application;
         init(application, TASK_COUNT,PROGRESS_DURATION);
     }
 
@@ -270,6 +269,7 @@ public class OkDlManager {
      * @param parallelTaskCount
      */
     public static void init(@NonNull Application application, int parallelTaskCount,long progressDuration) {
+        mApplication = application;
         Intent serviceIntent = new Intent(application, OkDlService.class);
         serviceIntent.putExtra("action","init");
         serviceIntent.putExtra("task_count", parallelTaskCount);

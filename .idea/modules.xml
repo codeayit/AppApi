@@ -2,11 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/AppApi.iml" filepath="$PROJECT_DIR$/.idea/AppApi.iml" />
       <module fileurl="file://$PROJECT_DIR$/BaseAppApi.iml" filepath="$PROJECT_DIR$/BaseAppApi.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/baseapi/baseapi.iml" filepath="$PROJECT_DIR$/baseapi/baseapi.iml" />
       <module fileurl="file://$PROJECT_DIR$/baseapi/baseapi.iml" filepath="$PROJECT_DIR$/baseapi/baseapi.iml" />
     </modules>
   </component>
