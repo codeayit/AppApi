@@ -115,6 +115,47 @@ public class OkDlManager {
         mApplication.startService(intent);
     }
 
+    public boolean resumeTask(String url){
+        OkDlTask task = DbUtil.findFirst(OkDlTask.class,
+                ConditionBuilder.getInstance()
+                        .start()
+                        .addCondition(OkDlTask.Field.url, url).end());
+        if (task!=null && (task.getStatus()==OkDlTask.Status.STATUS_ERROR || task.getStatus()== OkDlTask.Status.STATUS_PAUSE)){
+            newCall(task);
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    public void resumeAllTask(int flag){
+        List<OkDlTask> list = DbUtil.find(OkDlTask.class,
+                ConditionBuilder.getInstance()
+                        .start()
+                        .addCondition(OkDlTask.Field.status, String.valueOf(OkDlTask.Status.STATUS_PAUSE))
+                        .or()
+                        .addCondition(OkDlTask.Field.status, String.valueOf(OkDlTask.Status.STATUS_ERROR))
+                        .and()
+                        .addCondition(OkDlTask.Field.flag,String.valueOf(flag))
+                        .end());
+        for (OkDlTask task:list){
+            resumeTask(task.getUrl());
+        }
+    }
+
+    public void resumeAllTask(){
+        List<OkDlTask> list = DbUtil.find(OkDlTask.class,
+                ConditionBuilder.getInstance()
+                        .start()
+                        .addCondition(OkDlTask.Field.status, String.valueOf(OkDlTask.Status.STATUS_PAUSE))
+                        .or()
+                        .addCondition(OkDlTask.Field.status, String.valueOf(OkDlTask.Status.STATUS_ERROR))
+                        .end());
+        for (OkDlTask task:list){
+            resumeTask(task.getUrl());
+        }
+    }
+
 
     protected void add(int flag, String url, String dir, String fileName) {
 
