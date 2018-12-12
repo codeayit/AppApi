@@ -72,7 +72,7 @@ public abstract class OkFileCallBack extends Callback<File> {
     @Override
     public File parseNetworkResponse(Response response, int id) throws Exception {
 //        return saveFile(response, id);
-        return saveFile(response,startsPoint,id);
+        return saveFile(response, startsPoint, id);
     }
 
     /**
@@ -152,18 +152,18 @@ public abstract class OkFileCallBack extends Callback<File> {
 
     public File saveFile(Response response, final long startsPoint, final int id) throws IOException {
         final ResponseBody body = response.body();
-        final long total = body.contentLength()+startsPoint;
+        final long total = body.contentLength() + startsPoint;
         InputStream in = body.byteStream();
         FileChannel channelOut = null;
         // 随机访问文件，可以指定断点续传的起始位置
         RandomAccessFile randomAccessFile = null;
-        File file = new File(destFileDir,destFileName);
-        if (file.getParentFile().exists()){
+        File file = new File(destFileDir, destFileName);
+        if (file.getParentFile().exists()) {
             file.getParentFile().mkdirs();
-        }else if (startsPoint == 0){
-            if (file.exists()){
-                file.delete();
-            }
+        }
+
+        if (startsPoint == 0 && file.exists()) {
+            file.delete();
         }
         OkHttpUtils.getInstance().getDelivery().execute(new Runnable() {
             @Override
@@ -176,7 +176,7 @@ public abstract class OkFileCallBack extends Callback<File> {
             //Chanel NIO中的用法，由于RandomAccessFile没有使用缓存策略，直接使用会使得下载速度变慢，亲测缓存下载3.3秒的文件，用普通的RandomAccessFile需要20多秒。
             channelOut = randomAccessFile.getChannel();
             // 内存映射，直接使用RandomAccessFile，是用其seek方法指定下载的起始位置，使用缓存下载，在这里指定下载位置。
-            MappedByteBuffer mappedBuffer = channelOut.map(FileChannel.MapMode.READ_WRITE, startsPoint, total-startsPoint);
+            MappedByteBuffer mappedBuffer = channelOut.map(FileChannel.MapMode.READ_WRITE, startsPoint, total - startsPoint);
             byte[] buffer = new byte[2048];
             int len;
             long sum = startsPoint;
