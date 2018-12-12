@@ -160,6 +160,10 @@ public abstract class OkFileCallBack extends Callback<File> {
         File file = new File(destFileDir,destFileName);
         if (file.getParentFile().exists()){
             file.getParentFile().mkdirs();
+        }else if (startsPoint == 0){
+            if (file.exists()){
+                file.delete();
+            }
         }
         OkHttpUtils.getInstance().getDelivery().execute(new Runnable() {
             @Override

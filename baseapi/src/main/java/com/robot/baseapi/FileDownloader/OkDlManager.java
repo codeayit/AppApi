@@ -380,6 +380,7 @@ public class OkDlManager {
             getListener(task.getFlag()).onPrepare(task);
         }
         KLog.d("RANGE" + " : " + "bytes=" + task.getCurrentLength() + "-" + task.getUrl());
+
         OkFileCallBack callback = null;
         OkHttpUtils.get()
                 .url(task.getUrl())
