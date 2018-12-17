@@ -174,10 +174,21 @@ public class OkDlManager {
             File file = new File(task.getLocalPath());
             if (!file.exists()) {
                 task.setCurrentLength(0);
+                updateStatusByUrl(task.getUrl(), OkDlTask.Status.STATUS_WAITING);
+                newCall(task);
+            }else{
+                if (task.getTotalLength() == task.getCurrentLength()){
+                    task.setStatus(OkDlTask.Status.STATUS_SUCCESS);
+                    if (getListener(task.getFlag()) != null) {
+                        getListener(task.getFlag()).onFinish(task);
+                    }
+                    deleteByUrl(task.getUrl());
+                }else{
+                    newCall(task);
+                }
             }
-            updateStatusByUrl(task.getUrl(), OkDlTask.Status.STATUS_WAITING);
         }
-        newCall(task);
+
     }
 
     public void cancleTask(String url){
