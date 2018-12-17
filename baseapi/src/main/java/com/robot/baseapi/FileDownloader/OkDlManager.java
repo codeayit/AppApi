@@ -67,7 +67,7 @@ public class OkDlManager {
         return manager;
     }
 
-    public List<OkDlTask> getAllTask(){
+    public List<OkDlTask> getAllTask() {
         return getAll();
     }
 
@@ -75,9 +75,10 @@ public class OkDlManager {
         return DbUtil.findAll(OkDlTask.class);
     }
 
-    public List<OkDlTask> getAllTask(int flag){
+    public List<OkDlTask> getAllTask(int flag) {
         return getAll(flag);
     }
+
     protected List<OkDlTask> getAll(int flag) {
         return DbUtil.find(OkDlTask.class,
                 ConditionBuilder.getInstance()
@@ -85,9 +86,10 @@ public class OkDlManager {
                         .addCondition(OkDlTask.Field.flag, String.valueOf(flag)).end());
     }
 
-    public OkDlTask getTask(String url){
+    public OkDlTask getTask(String url) {
         return get(url);
     }
+
     protected OkDlTask get(String url) {
         return DbUtil.findFirst(OkDlTask.class, ConditionBuilder.getInstance().start().addCondition(OkDlTask.Field.url, url).end());
     }
@@ -98,37 +100,38 @@ public class OkDlManager {
         String fileName = split[split.length - 1];
         add(flag, url, dir, fileName);
     }
-    public void addTask(int flag,String url,String dir){
+
+    public void addTask(int flag, String url, String dir) {
         String[] split = url.split("/");
         String fileName = split[split.length - 1];
 //        add(flag, url, dir, fileName);
-       addTask(flag, url, dir, fileName);
+        addTask(flag, url, dir, fileName);
     }
 
-    public void addTask(int flag, String url, String dir, String fileName){
-        Intent intent = new Intent(mApplication,OkDlService.class);
-        intent.putExtra("action","add");
-        intent.putExtra("flag",flag);
-        intent.putExtra("url",url);
-        intent.putExtra("dir",dir);
-        intent.putExtra("fileName",fileName);
+    public void addTask(int flag, String url, String dir, String fileName) {
+        Intent intent = new Intent(mApplication, OkDlService.class);
+        intent.putExtra("action", "add");
+        intent.putExtra("flag", flag);
+        intent.putExtra("url", url);
+        intent.putExtra("dir", dir);
+        intent.putExtra("fileName", fileName);
         mApplication.startService(intent);
     }
 
-    public boolean resumeTask(String url){
+    public boolean resumeTask(String url) {
         OkDlTask task = DbUtil.findFirst(OkDlTask.class,
                 ConditionBuilder.getInstance()
                         .start()
                         .addCondition(OkDlTask.Field.url, url).end());
-        if (task!=null && (task.getStatus()==OkDlTask.Status.STATUS_ERROR || task.getStatus()== OkDlTask.Status.STATUS_PAUSE)){
+        if (task != null && (task.getStatus() == OkDlTask.Status.STATUS_ERROR || task.getStatus() == OkDlTask.Status.STATUS_PAUSE)) {
             newCall(task);
             return true;
-        }else{
+        } else {
             return false;
         }
     }
 
-    public void resumeAllTask(int flag){
+    public void resumeAllTask(int flag) {
         List<OkDlTask> list = DbUtil.find(OkDlTask.class,
                 ConditionBuilder.getInstance()
                         .start()
@@ -136,14 +139,14 @@ public class OkDlManager {
                         .or()
                         .addCondition(OkDlTask.Field.status, String.valueOf(OkDlTask.Status.STATUS_ERROR))
                         .and()
-                        .addCondition(OkDlTask.Field.flag,String.valueOf(flag))
+                        .addCondition(OkDlTask.Field.flag, String.valueOf(flag))
                         .end());
-        for (OkDlTask task:list){
+        for (OkDlTask task : list) {
             resumeTask(task.getUrl());
         }
     }
 
-    public void resumeAllTask(){
+    public void resumeAllTask() {
         List<OkDlTask> list = DbUtil.find(OkDlTask.class,
                 ConditionBuilder.getInstance()
                         .start()
@@ -151,7 +154,7 @@ public class OkDlManager {
                         .or()
                         .addCondition(OkDlTask.Field.status, String.valueOf(OkDlTask.Status.STATUS_ERROR))
                         .end());
-        for (OkDlTask task:list){
+        for (OkDlTask task : list) {
             resumeTask(task.getUrl());
         }
     }
@@ -176,14 +179,14 @@ public class OkDlManager {
                 task.setCurrentLength(0);
                 updateStatusByUrl(task.getUrl(), OkDlTask.Status.STATUS_WAITING);
                 newCall(task);
-            }else{
-                if (task.getTotalLength() == task.getCurrentLength()){
+            } else {
+                if (task.getTotalLength() == task.getCurrentLength()) {
                     task.setStatus(OkDlTask.Status.STATUS_SUCCESS);
                     if (getListener(task.getFlag()) != null) {
                         getListener(task.getFlag()).onFinish(task);
                     }
                     deleteByUrl(task.getUrl());
-                }else{
+                } else {
                     newCall(task);
                 }
             }
@@ -191,10 +194,10 @@ public class OkDlManager {
 
     }
 
-    public void cancleTask(String url){
-        Intent intent = new Intent(mApplication,OkDlService.class);
-        intent.putExtra("action","cancle");
-        intent.putExtra("url",url);
+    public void cancleTask(String url) {
+        Intent intent = new Intent(mApplication, OkDlService.class);
+        intent.putExtra("action", "cancle");
+        intent.putExtra("url", url);
         mApplication.startService(intent);
     }
 
@@ -211,7 +214,19 @@ public class OkDlManager {
 
             switch (first.getStatus()) {
                 case OkDlTask.Status.STATUS_DOWNLOADING:
-                    callBackMap.get(url).setStatus(OkDlTask.Status.STATUS_DISCARD);
+                    if (taskCount == 0) {
+                        if (getListener(first.getFlag()) != null) {
+                            first.setStatus(OkDlTask.Status.STATUS_DISCARD);
+                            getListener(first.getFlag()).onCancle(first);
+                        }
+                        int count = DbUtil.delete(OkDlTask.class,
+                                ConditionBuilder.getInstance()
+                                        .start()
+                                        .addCondition(OkDlTask.Field.url, url).end());
+                        deleteFile(first);
+                    } else {
+                        callBackMap.get(url).setStatus(OkDlTask.Status.STATUS_DISCARD);
+                    }
                     break;
                 case OkDlTask.Status.STATUS_ERROR:
                 case OkDlTask.Status.STATUS_PAUSE:
@@ -225,16 +240,15 @@ public class OkDlManager {
                             ConditionBuilder.getInstance()
                                     .start()
                                     .addCondition(OkDlTask.Field.url, url).end());
-                    KLog.d("count : " + count);
                     deleteFile(first);
                     break;
             }
         }
     }
 
-    public void cancleAllTask(){
-        Intent intent = new Intent(mApplication,OkDlService.class);
-        intent.putExtra("action","cancleAll");
+    public void cancleAllTask() {
+        Intent intent = new Intent(mApplication, OkDlService.class);
+        intent.putExtra("action", "cancleAll");
         mApplication.startService(intent);
     }
 
@@ -245,12 +259,13 @@ public class OkDlManager {
         }
     }
 
-    public void pauseTask(@NonNull String url){
-        Intent intent = new Intent(mApplication,OkDlService.class);
-        intent.putExtra("action","pause");
-        intent.putExtra("url",url);
+    public void pauseTask(@NonNull String url) {
+        Intent intent = new Intent(mApplication, OkDlService.class);
+        intent.putExtra("action", "pause");
+        intent.putExtra("url", url);
         mApplication.startService(intent);
     }
+
     protected void pause(@NonNull String url) {
         OkDlTask first = DbUtil.findFirst(OkDlTask.class,
                 ConditionBuilder.getInstance()
@@ -270,9 +285,9 @@ public class OkDlManager {
     }
 
 
-    public void pauseAllTask(){
-        Intent intent = new Intent(mApplication,OkDlService.class);
-        intent.putExtra("action","pauseAll");
+    public void pauseAllTask() {
+        Intent intent = new Intent(mApplication, OkDlService.class);
+        intent.putExtra("action", "pauseAll");
         mApplication.startService(intent);
     }
 
@@ -303,7 +318,7 @@ public class OkDlManager {
     }
 
 
-    protected void init(int parallelTaskCount,long progressDuration) {
+    protected void init(int parallelTaskCount, long progressDuration) {
         this.TASK_COUNT = parallelTaskCount;
         this.PROGRESS_DURATION = progressDuration;
         this.taskCount = 0;
@@ -313,19 +328,19 @@ public class OkDlManager {
      * @param application
      */
     public static void init(@NonNull Application application) {
-        init(application, TASK_COUNT,PROGRESS_DURATION);
+        init(application, TASK_COUNT, PROGRESS_DURATION);
     }
 
     /**
      * @param application
      * @param parallelTaskCount
      */
-    public static void init(@NonNull Application application, int parallelTaskCount,long progressDuration) {
+    public static void init(@NonNull Application application, int parallelTaskCount, long progressDuration) {
         mApplication = application;
         Intent serviceIntent = new Intent(application, OkDlService.class);
-        serviceIntent.putExtra("action","init");
+        serviceIntent.putExtra("action", "init");
         serviceIntent.putExtra("task_count", parallelTaskCount);
-        serviceIntent.putExtra("progress_duration",progressDuration);
+        serviceIntent.putExtra("progress_duration", progressDuration);
         application.startService(serviceIntent);
     }
 

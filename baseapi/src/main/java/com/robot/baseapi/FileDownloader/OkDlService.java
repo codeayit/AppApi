@@ -6,6 +6,7 @@ import android.os.IBinder;
 
 import com.ayit.klog.KLog;
 import com.robot.baseapi.base.BaseService;
+import com.robot.baseapi.util.LogUtil;
 
 public class OkDlService extends BaseService {
 
@@ -26,6 +27,7 @@ public class OkDlService extends BaseService {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         KLog.d("OkDlService:onStartCommand()");
+        LogUtil.printIntent(intent);
 
         Bundle extras = intent.getExtras();
 
