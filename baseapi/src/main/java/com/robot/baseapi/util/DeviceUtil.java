@@ -25,8 +25,8 @@ public class DeviceUtil {
         WifiManager wifi = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         WifiInfo info = wifi.getConnectionInfo();
         String wifiMac = info.getMacAddress();
-//        return wifiMac;
-        return "123456";
+        return wifiMac;
+//        return "123456";
     }
 
     /**
