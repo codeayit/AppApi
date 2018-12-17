@@ -174,6 +174,9 @@ public class OkDlManager {
             task = new OkDlTask(flag, url, dir, fileName);
             DbUtil.save(task);
         } else {
+            if (task.getStatus()==OkDlTask.Status.STATUS_DOWNLOADING && taskCount!=0){
+                return;
+            }
             File file = new File(task.getLocalPath());
             if (!file.exists()) {
                 task.setCurrentLength(0);
