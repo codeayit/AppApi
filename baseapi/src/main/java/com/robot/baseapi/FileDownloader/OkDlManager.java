@@ -173,6 +173,7 @@ public class OkDlManager {
         if (task == null) {
             task = new OkDlTask(flag, url, dir, fileName);
             DbUtil.save(task);
+            newCall(task);
         } else {
             if (task.getStatus()==OkDlTask.Status.STATUS_DOWNLOADING && taskCount!=0){
                 return;
@@ -183,7 +184,7 @@ public class OkDlManager {
                 updateStatusByUrl(task.getUrl(), OkDlTask.Status.STATUS_WAITING);
                 newCall(task);
             } else {
-                if (task.getTotalLength() == task.getCurrentLength()) {
+                if (task.getTotalLength() == task.getCurrentLength() && (task.getTotalLength() !=0)) {
                     task.setStatus(OkDlTask.Status.STATUS_SUCCESS);
                     if (getListener(task.getFlag()) != null) {
                         getListener(task.getFlag()).onFinish(task);
@@ -198,10 +199,11 @@ public class OkDlManager {
     }
 
     public void cancleTask(String url) {
-        Intent intent = new Intent(mApplication, OkDlService.class);
-        intent.putExtra("action", "cancle");
-        intent.putExtra("url", url);
-        mApplication.startService(intent);
+//        Intent intent = new Intent(mApplication, OkDlService.class);
+//        intent.putExtra("action", "cancle");
+//        intent.putExtra("url", url);
+//        mApplication.startService(intent);
+        cancle(url);
     }
 
     protected void cancle(String url) {
@@ -243,6 +245,7 @@ public class OkDlManager {
                             ConditionBuilder.getInstance()
                                     .start()
                                     .addCondition(OkDlTask.Field.url, url).end());
+                    KLog.d("delete_count:"+count);
                     deleteFile(first);
                     break;
             }
@@ -250,9 +253,10 @@ public class OkDlManager {
     }
 
     public void cancleAllTask() {
-        Intent intent = new Intent(mApplication, OkDlService.class);
-        intent.putExtra("action", "cancleAll");
-        mApplication.startService(intent);
+//        Intent intent = new Intent(mApplication, OkDlService.class);
+//        intent.putExtra("action", "cancleAll");
+//        mApplication.startService(intent);
+        cancleAll();
     }
 
     protected void cancleAll() {
