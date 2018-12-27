@@ -1,5 +1,6 @@
 package com.robot.baseapi.FileDownloader;
 
+import com.ayit.klog.KLog;
 import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.Callback;
 
@@ -181,6 +182,7 @@ public abstract class OkFileCallBack extends Callback<File> {
             int len;
             long sum = startsPoint;
             long startTime = System.currentTimeMillis();
+            KLog.d("progressDuration : "+progressDuration);
             while ((len = in.read(buffer)) != -1 && !isCancle()) {
                 sum += len;
                 final long finalSum = sum;

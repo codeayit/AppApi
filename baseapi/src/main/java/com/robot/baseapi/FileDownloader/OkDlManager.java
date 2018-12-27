@@ -30,7 +30,6 @@ public class OkDlManager {
     private static OkDlManager manager;
     //    private Context mContext;
     private int taskCount;
-    private int progressDuration;
     private Map<Integer, OkDlListener> listenerMap;
 
     private Map<String, OkFileCallBack> callBackMap;
@@ -539,7 +538,7 @@ public class OkDlManager {
                             }
                         }
                 );
-        callback.setProgressDuration(progressDuration);
+        callback.setProgressDuration(PROGRESS_DURATION);
         callBackMap.put(task.getUrl(), callback);
     }
 
