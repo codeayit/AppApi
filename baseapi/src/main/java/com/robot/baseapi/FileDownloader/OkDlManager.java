@@ -265,6 +265,10 @@ public class OkDlManager {
         }
     }
 
+    public void cancleAllTask(int flag){
+        cancleAllTask(flag);
+    }
+
     public void pauseTask(@NonNull String url) {
         Intent intent = new Intent(mApplication, OkDlService.class);
         intent.putExtra("action", "pause");
