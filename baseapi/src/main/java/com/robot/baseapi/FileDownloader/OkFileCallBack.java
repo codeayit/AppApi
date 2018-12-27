@@ -54,6 +54,7 @@ public abstract class OkFileCallBack extends Callback<File> {
     }
 
     public void setProgressDuration(long progressDuration) {
+        KLog.d("setProgressDuration:"+progressDuration);
         this.progressDuration = progressDuration;
     }
 
@@ -91,65 +92,6 @@ public abstract class OkFileCallBack extends Callback<File> {
      */
     public abstract void onStart(long totalLength);
 
-
-//    public File saveFile(Response response, final int id) throws IOException {
-//        InputStream is = null;
-//        byte[] buf = new byte[2048];
-//        int len = 0;
-//        FileOutputStream fos = null;
-//        try {
-//            is = response.body().byteStream();
-//            final long total = response.body().contentLength();
-//
-//            long sum = 0;
-//
-//            File dir = new File(destFileDir);
-//            if (!dir.exists()) {
-//                dir.mkdirs();
-//            }
-//            File file = new File(dir, destFileName);
-//            OkHttpUtils.getInstance().getDelivery().execute(new Runnable() {
-//                @Override
-//                public void run() {
-//                    onStart(total);
-//                }
-//            });
-//
-//            fos = new FileOutputStream(file);
-//            long startTime = System.currentTimeMillis();
-//            while ((len = is.read(buf)) != -1 && !isCancle()) {
-//                sum += len;
-//                fos.write(buf, 0, len);
-//                final long finalSum = sum;
-//                inProgressSubThread(finalSum, total);
-//                if (System.currentTimeMillis() - startTime > 1000) {
-//                    OkHttpUtils.getInstance().getDelivery().execute(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            inProgress(finalSum * 1.0f / total, total, id);
-//                        }
-//                    });
-//                    startTime = System.currentTimeMillis();
-//                }
-//            }
-//            fos.flush();
-//            if (isCancle()) {
-//                return null;
-//            }
-//            return file;
-//
-//        } finally {
-//            try {
-//                response.body().close();
-//                if (is != null) is.close();
-//            } catch (IOException e) {
-//            }
-//            try {
-//                if (fos != null) fos.close();
-//            } catch (IOException e) {
-//            }
-//        }
-//    }
 
     public File saveFile(Response response, final long startsPoint, final int id) throws IOException {
         final ResponseBody body = response.body();

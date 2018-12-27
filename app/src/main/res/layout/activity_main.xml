@@ -12,16 +12,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:layout_widthPercent="100%w"
-        android:text="打开外部activity(可重复)"/>
-    <Button
-        android:onClick="btn1"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="打开外部activity(不可重复)"/>
-    <Button
-        android:onClick="btn2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="测试"/>
+        android:text="下载"/>
+
 
 </com.zhy.android.percent.support.PercentLinearLayout>

@@ -329,6 +329,7 @@ public class OkDlManager {
 
 
     protected void init(int parallelTaskCount, long progressDuration) {
+        KLog.d("init:"+parallelTaskCount+" : "+progressDuration);
         this.TASK_COUNT = parallelTaskCount;
         this.PROGRESS_DURATION = progressDuration;
         this.taskCount = 0;
