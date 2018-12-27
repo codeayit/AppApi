@@ -54,7 +54,6 @@ public abstract class OkFileCallBack extends Callback<File> {
     }
 
     public void setProgressDuration(long progressDuration) {
-        KLog.d("setProgressDuration:"+progressDuration);
         this.progressDuration = progressDuration;
     }
 
@@ -124,7 +123,6 @@ public abstract class OkFileCallBack extends Callback<File> {
             int len;
             long sum = startsPoint;
             long startTime = System.currentTimeMillis();
-            KLog.d("progressDuration : "+progressDuration);
             while ((len = in.read(buffer)) != -1 && !isCancle()) {
                 sum += len;
                 final long finalSum = sum;
