@@ -265,8 +265,15 @@ public class OkDlManager {
         }
     }
 
+    protected void cancleAll(int flag){
+        List<OkDlTask> all = getAll(flag);
+        for (OkDlTask task : all) {
+            cancle(task.getUrl());
+        }
+    }
+
     public void cancleAllTask(int flag){
-        cancleAllTask(flag);
+        cancleAll(flag);
     }
 
     public void pauseTask(@NonNull String url) {
