@@ -12,6 +12,8 @@ import com.robot.baseapi.db.DbUtil;
 import com.zhy.http.okhttp.OkHttpUtils;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,18 +34,30 @@ public class OkDlManager {
     private int taskCount;
     private Map<Integer, OkDlListener> listenerMap;
 
+    private List<OkDlListener> listeners;
+
     private Map<String, OkFileCallBack> callBackMap;
 
 
     public OkDlManager() {
-        if (callBackMap == null)
-            callBackMap = new HashMap<>();
-        if (listenerMap == null)
-            listenerMap = new HashMap<>();
+        if (callBackMap == null) callBackMap = new HashMap<>();
+        if (listenerMap == null) listenerMap = new HashMap<>();
+        if (listeners == null) listeners = new ArrayList<>();
     }
 
     public void addDlListener(int flag, OkDlListener dlListener) {
         listenerMap.put(flag, dlListener);
+    }
+
+    public void addDlListener(OkDlListener dlListener) {
+        if (dlListener != null)
+            listeners.add(dlListener);
+    }
+
+    public void removeDlListener(OkDlListener dlListener) {
+        if (listeners.contains(dlListener)) {
+            listeners.remove(dlListener);
+        }
     }
 
 
@@ -174,7 +188,7 @@ public class OkDlManager {
             DbUtil.save(task);
             newCall(task);
         } else {
-            if (task.getStatus()==OkDlTask.Status.STATUS_DOWNLOADING && taskCount!=0){
+            if (task.getStatus() == OkDlTask.Status.STATUS_DOWNLOADING && taskCount != 0) {
                 return;
             }
             File file = new File(task.getLocalPath());
@@ -183,11 +197,24 @@ public class OkDlManager {
                 updateStatusByUrl(task.getUrl(), OkDlTask.Status.STATUS_WAITING);
                 newCall(task);
             } else {
-                if (task.getTotalLength() == task.getCurrentLength() && (task.getTotalLength() !=0)) {
+                if (task.getTotalLength() == task.getCurrentLength() && (task.getTotalLength() != 0)) {
                     task.setStatus(OkDlTask.Status.STATUS_SUCCESS);
                     if (getListener(task.getFlag()) != null) {
-                        getListener(task.getFlag()).onFinish(task);
+                        try {
+                            getListener(task.getFlag()).onFinish(task);
+                        } catch (Exception e) {
+                        }
                     }
+
+                    if (listeners != null && !listeners.isEmpty()) {
+                        for (OkDlListener listener : listeners) {
+                            try {
+                                listener.onFinish(task);
+                            } catch (Exception e) {
+                            }
+                        }
+                    }
+
                     deleteByUrl(task.getUrl());
                 } else {
                     newCall(task);
@@ -223,6 +250,14 @@ public class OkDlManager {
                             first.setStatus(OkDlTask.Status.STATUS_DISCARD);
                             getListener(first.getFlag()).onCancle(first);
                         }
+                        if (listeners != null && !listeners.isEmpty()) {
+                            for (OkDlListener listener : listeners) {
+                                try {
+                                    listener.onCancle(first);
+                                } catch (Exception e) {
+                                }
+                            }
+                        }
                         int count = DbUtil.delete(OkDlTask.class,
                                 ConditionBuilder.getInstance()
                                         .start()
@@ -238,13 +273,26 @@ public class OkDlManager {
                     //存在文件和待执行任务，删除任务，并删除文件
                     if (getListener(first.getFlag()) != null) {
                         first.setStatus(OkDlTask.Status.STATUS_DISCARD);
-                        getListener(first.getFlag()).onCancle(first);
+                        try {
+                            getListener(first.getFlag()).onCancle(first);
+                        } catch (Exception e) {
+                        }
                     }
+
+                    if (listeners != null && !listeners.isEmpty()) {
+                        for (OkDlListener listener : listeners) {
+                            try {
+                                listener.onCancle(first);
+                            } catch (Exception e) {
+                            }
+                        }
+                    }
+
                     int count = DbUtil.delete(OkDlTask.class,
                             ConditionBuilder.getInstance()
                                     .start()
                                     .addCondition(OkDlTask.Field.url, url).end());
-                    KLog.d("delete_count:"+count);
+                    KLog.d("delete_count:" + count);
                     deleteFile(first);
                     break;
             }
@@ -265,14 +313,14 @@ public class OkDlManager {
         }
     }
 
-    protected void cancleAll(int flag){
+    protected void cancleAll(int flag) {
         List<OkDlTask> all = getAll(flag);
         for (OkDlTask task : all) {
             cancle(task.getUrl());
         }
     }
 
-    public void cancleAllTask(int flag){
+    public void cancleAllTask(int flag) {
         cancleAll(flag);
     }
 
@@ -353,7 +401,7 @@ public class OkDlManager {
      * @param parallelTaskCount
      */
     public static void init(@NonNull Application application, int parallelTaskCount, long progressDuration) {
-        KLog.d("static init: "+parallelTaskCount+" : "+progressDuration);
+        KLog.d("static init: " + parallelTaskCount + " : " + progressDuration);
         mApplication = application;
         Intent serviceIntent = new Intent(application, OkDlService.class);
         serviceIntent.putExtra("action", "init");
@@ -407,7 +455,18 @@ public class OkDlManager {
                     ConditionBuilder.getInstance()
                             .start()
                             .addCondition(OkDlTask.Field.url, task.getUrl()).end());
-            getListener(task.getFlag()).onPrepare(task);
+            try {
+                getListener(task.getFlag()).onPrepare(task);
+            } catch (Exception e) {
+            }
+        }
+        if (listeners != null && !listeners.isEmpty()) {
+            for (OkDlListener listener : listeners) {
+                try {
+                    listener.onPrepare(task);
+                } catch (Exception e) {
+                }
+            }
         }
         if (taskCount >= TASK_COUNT) {
             return;
@@ -421,7 +480,18 @@ public class OkDlManager {
                     ConditionBuilder.getInstance()
                             .start()
                             .addCondition(OkDlTask.Field.url, task.getUrl()).end());
-            getListener(task.getFlag()).onPrepare(task);
+            try {
+                getListener(task.getFlag()).onStart(task);
+            } catch (Exception e) {
+            }
+        }
+        if (listeners != null && !listeners.isEmpty()) {
+            for (OkDlListener listener : listeners) {
+                try {
+                    listener.onStart(task);
+                } catch (Exception e) {
+                }
+            }
         }
         KLog.d("RANGE" + " : " + "bytes=" + task.getCurrentLength() + "-" + task.getUrl());
 
@@ -441,7 +511,18 @@ public class OkDlManager {
                                         case OkDlTask.Status.STATUS_PAUSE:
                                             task.setStatus(OkDlTask.Status.STATUS_PAUSE);
                                             if (getListener(task.getFlag()) != null) {
-                                                getListener(task.getFlag()).onStop(task);
+                                                try {
+                                                    getListener(task.getFlag()).onStop(task);
+                                                } catch (Exception e1) {
+                                                }
+                                            }
+                                            if (listeners != null && !listeners.isEmpty()) {
+                                                for (OkDlListener listener : listeners) {
+                                                    try {
+                                                        listener.onStop(task);
+                                                    } catch (Exception e1) {
+                                                    }
+                                                }
                                             }
                                             updateStatusByUrl(task.getUrl(), task.getStatus());
                                             break;
@@ -450,7 +531,18 @@ public class OkDlManager {
                                             task.setTotalLength(0);
                                             task.setCurrentLength(0);
                                             if (getListener(task.getFlag()) != null) {
-                                                getListener(task.getFlag()).onCancle(task);
+                                                try {
+                                                    getListener(task.getFlag()).onCancle(task);
+                                                } catch (Exception e1) {
+                                                }
+                                            }
+                                            if (listeners != null && !listeners.isEmpty()) {
+                                                for (OkDlListener listener : listeners) {
+                                                    try {
+                                                        listener.onCancle(task);
+                                                    } catch (Exception e1) {
+                                                    }
+                                                }
                                             }
                                             deleteByUrl(task.getUrl());
                                             break;
@@ -459,7 +551,18 @@ public class OkDlManager {
                                     if (getListener(task.getFlag()) != null) {
                                         task.setStatus(OkDlTask.Status.STATUS_ERROR);
                                         updateStatusByUrl(task.getUrl(), task.getStatus());
-                                        getListener(task.getFlag()).onError(task, e.getMessage());
+                                        try {
+                                            getListener(task.getFlag()).onError(task, e.getMessage());
+                                        } catch (Exception e1) {
+                                        }
+                                    }
+                                    if (listeners != null && !listeners.isEmpty()) {
+                                        for (OkDlListener listener : listeners) {
+                                            try {
+                                                listener.onError(task, e.getMessage());
+                                            } catch (Exception e1) {
+                                            }
+                                        }
                                     }
                                 }
 
@@ -467,35 +570,69 @@ public class OkDlManager {
 
                             @Override
                             public void onResponse(File response, int id) {
-                                if (getListener(task.getFlag()) != null) {
-                                    if (this.isCancle()) {
-                                        switch (this.getStatus()) {
-                                            case OkDlTask.Status.STATUS_PAUSE:
-                                                task.setStatus(OkDlTask.Status.STATUS_PAUSE);
-                                                if (getListener(task.getFlag()) != null) {
+//                                if (getListener(task.getFlag()) != null) {
+                                if (this.isCancle()) {
+                                    switch (this.getStatus()) {
+                                        case OkDlTask.Status.STATUS_PAUSE:
+                                            task.setStatus(OkDlTask.Status.STATUS_PAUSE);
+                                            if (getListener(task.getFlag()) != null) {
+                                                try {
                                                     getListener(task.getFlag()).onStop(task);
+                                                } catch (Exception e) {
                                                 }
-                                                updateStatusByUrl(task.getUrl(), task.getStatus());
-                                                break;
-                                            case OkDlTask.Status.STATUS_DISCARD:
-                                                task.setStatus(OkDlTask.Status.STATUS_DISCARD);
-                                                task.setTotalLength(0);
-                                                task.setCurrentLength(0);
-                                                if (getListener(task.getFlag()) != null) {
+                                            }
+                                            if (listeners != null && !listeners.isEmpty()) {
+                                                for (OkDlListener listener : listeners) {
+                                                    try {
+                                                        listener.onStop(task);
+                                                    } catch (Exception e) {
+                                                    }
+                                                }
+                                            }
+                                            updateStatusByUrl(task.getUrl(), task.getStatus());
+                                            break;
+                                        case OkDlTask.Status.STATUS_DISCARD:
+                                            task.setStatus(OkDlTask.Status.STATUS_DISCARD);
+                                            task.setTotalLength(0);
+                                            task.setCurrentLength(0);
+                                            if (getListener(task.getFlag()) != null) {
+                                                try {
                                                     getListener(task.getFlag()).onCancle(task);
+                                                } catch (Exception e) {
                                                 }
-                                                deleteByUrl(task.getUrl());
-                                                break;
-                                        }
-                                    } else {
-                                        task.setStatus(OkDlTask.Status.STATUS_SUCCESS);
-                                        if (getListener(task.getFlag()) != null) {
-                                            getListener(task.getFlag()).onFinish(task);
-                                        }
-                                        deleteByUrl(task.getUrl());
+                                                ;
+                                            }
+                                            if (listeners != null && !listeners.isEmpty()) {
+                                                for (OkDlListener listener : listeners) {
+                                                    try {
+                                                        listener.onCancle(task);
+                                                    } catch (Exception e) {
+                                                    }
+                                                }
+                                            }
+                                            deleteByUrl(task.getUrl());
+                                            break;
                                     }
+                                } else {
+                                    task.setStatus(OkDlTask.Status.STATUS_SUCCESS);
+                                    if (getListener(task.getFlag()) != null) {
+                                        try {
+                                            getListener(task.getFlag()).onFinish(task);
+                                        } catch (Exception e) {
+                                        }
+                                    }
+                                    if (listeners != null && !listeners.isEmpty()) {
+                                        for (OkDlListener listener : listeners) {
+                                            try {
+                                                listener.onFinish(task);
+                                            } catch (Exception e) {
+                                            }
+                                        }
+                                    }
+                                    deleteByUrl(task.getUrl());
                                 }
                             }
+//                            }
 
 
                             @Override
@@ -522,7 +659,19 @@ public class OkDlManager {
                                                 .start()
                                                 .addCondition(OkDlTask.Field.url, task.getUrl()).end());
                                 if (getListener(task.getFlag()) != null) {
-                                    getListener(task.getFlag()).onPrepare(task);
+                                    try {
+                                        getListener(task.getFlag()).onProgress(task);
+                                    } catch (Exception e) {
+                                    }
+                                }
+
+                                if (listeners != null && !listeners.isEmpty()) {
+                                    for (OkDlListener listener : listeners) {
+                                        try {
+                                            listener.onProgress(task);
+                                        } catch (Exception e) {
+                                        }
+                                    }
                                 }
                             }
 
@@ -530,7 +679,18 @@ public class OkDlManager {
                             public void inProgress(float progress, long total, int id) {
                                 super.inProgress(progress, total, id);
                                 if (getListener(task.getFlag()) != null) {
-                                    getListener(task.getFlag()).onProgress(task);
+                                    try {
+                                        getListener(task.getFlag()).onProgress(task);
+                                    } catch (Exception e) {
+                                    }
+                                }
+                                if (listeners != null && !listeners.isEmpty()) {
+                                    for (OkDlListener listener : listeners) {
+                                        try {
+                                            listener.onProgress(task);
+                                        } catch (Exception e) {
+                                        }
+                                    }
                                 }
                             }
 
