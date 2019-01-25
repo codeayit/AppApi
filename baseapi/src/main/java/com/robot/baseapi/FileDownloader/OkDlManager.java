@@ -447,8 +447,8 @@ public class OkDlManager {
 
     private void newCall(final OkDlTask task) {
 
+        task.setStatus(OkDlTask.Status.STATUS_WAITING);
         if (getListener(task.getFlag()) != null) {
-            task.setStatus(OkDlTask.Status.STATUS_WAITING);
             ContentValues values = new ContentValues();
             values.put(OkDlTask.Field.status, task.getStatus());
             DbUtil.update(OkDlTask.class, values,
@@ -472,19 +472,22 @@ public class OkDlManager {
             return;
         }
         taskCount++;
+        task.setStatus(OkDlTask.Status.STATUS_DOWNLOADING);
+        ContentValues values = new ContentValues();
+        values.put(OkDlTask.Field.status, task.getStatus());
+        DbUtil.update(OkDlTask.class, values,
+                ConditionBuilder.getInstance()
+                        .start()
+                        .addCondition(OkDlTask.Field.url, task.getUrl()).end());
         if (getListener(task.getFlag()) != null) {
-            task.setStatus(OkDlTask.Status.STATUS_DOWNLOADING);
-            ContentValues values = new ContentValues();
-            values.put(OkDlTask.Field.status, task.getStatus());
-            DbUtil.update(OkDlTask.class, values,
-                    ConditionBuilder.getInstance()
-                            .start()
-                            .addCondition(OkDlTask.Field.url, task.getUrl()).end());
             try {
                 getListener(task.getFlag()).onStart(task);
             } catch (Exception e) {
             }
         }
+
+
+
         if (listeners != null && !listeners.isEmpty()) {
             for (OkDlListener listener : listeners) {
                 try {
@@ -493,7 +496,7 @@ public class OkDlManager {
                 }
             }
         }
-        KLog.d("RANGE" + " : " + "bytes=" + task.getCurrentLength() + "-" + task.getUrl());
+        KLog.d("RANGE" + " : " + "bytes=" + task.getCurrentLength() + "-" + task.getUrl() +" "+task.getLocalPath());
 
         OkFileCallBack callback = null;
         OkHttpUtils.get()
@@ -548,9 +551,9 @@ public class OkDlManager {
                                             break;
                                     }
                                 } else {
+                                    task.setStatus(OkDlTask.Status.STATUS_ERROR);
+                                    updateStatusByUrl(task.getUrl(), task.getStatus());
                                     if (getListener(task.getFlag()) != null) {
-                                        task.setStatus(OkDlTask.Status.STATUS_ERROR);
-                                        updateStatusByUrl(task.getUrl(), task.getStatus());
                                         try {
                                             getListener(task.getFlag()).onError(task, e.getMessage());
                                         } catch (Exception e1) {
@@ -640,6 +643,7 @@ public class OkDlManager {
                                 task.setCurrentLength(currentLenght);
                                 ContentValues values = new ContentValues();
                                 values.put(OkDlTask.Field.currentLength, task.getCurrentLength());
+                                values.put(OkDlTask.Field.status,OkDlTask.Status.STATUS_DOWNLOADING);
 //                                values.put(OkDlTask.Field.totalLength,totalLength);
                                 DbUtil.update(OkDlTask.class, values,
                                         ConditionBuilder.getInstance()

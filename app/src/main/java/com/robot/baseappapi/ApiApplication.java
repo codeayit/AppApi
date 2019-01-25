@@ -7,8 +7,16 @@ import com.ayit.klog.KLog;
 import com.robot.baseapi.base.BaseApplication;
 import com.robot.baseapi.net.GlobalFilter;
 import com.robot.baseapi.net.NetWork;
+import com.zhy.http.okhttp.OkHttpUtils;
 
+import java.io.IOException;
 import java.util.HashMap;
+
+import okhttp3.HttpUrl;
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 /**
  * Created by lny on 2018/1/15.
