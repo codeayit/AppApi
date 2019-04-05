@@ -58,23 +58,29 @@
 	FileUtil
 	LogUtil
 	NetworkUtil
-	PermissionUtil //6.0以下权限判断（mic，camera）
-	SampleConstants
 	SPManager
 	StringUtil
+	GlideUtil //图片加载、本地视频缩略图
 ## 7.style
 	BaseAppTheme 全屏
 	PercentLayoutSytle 百分比布局的子空间
 ## 8.color
-	colors_base  常用颜色
+	colors_base  常用颜色
+## 9.FileDownlaoder
+	
 ## 9.自带依赖dependencies
 	{
-		compile  'org.litepal.android:core:1.3.2' //数据库依赖，使用时要在自己的app的assets中添加 litepal.xml(详情查看litepal)
-		compile  'com.squareup.picasso:picasso:2.5.2' //图片加载工具
-		compile 'com.alibaba:fastjson:1.2.38' 
-		compile 'com.github.1053452188:LoadingLayout:master-SNAPSHOT' //loadinglayout
-		compile 'com.mylhyl:acp:1.1.7' //android 6.0 以上的权限判断
-		compile 'com.zhy:percent-support-extends:1.1.1' //百分比布局
+		    api 'org.litepal.android:java:3.0.0'
+		    api 'com.zhy:okhttputils:2.6.2'
+		    api 'com.alibaba:fastjson:1.2.38'
+		    api 'com.github.1053452188:LoadingLayout:335586df9f'
+		    api 'com.zhy:percent-support-extends:1.1.1'
+		    api 'com.github.1053452188:CrashSimple:98a1030565'
+		    api 'com.android.support:multidex:1.0.3'
+		    api 'com.github.1053452188:simpleklog:2bc9effebd'
+		    api 'com.zhy:base-rvadapter:3.0.3'
+		    api 'com.android.support:recyclerview-v7:27.1.1'
+		    api 'com.github.bumptech.glide:glide:4.8.0'
 	}
 	
 		
