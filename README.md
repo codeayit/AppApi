@@ -56,10 +56,10 @@
 	DensityUtil	//px,sp,dp 互相转换
 	DeviceUtil	//获取设备信息
 	FileUtil
-	LogUtil
-	NetworkUtil
-	SPManager
-	StringUtil
+	LogUtil		//打印intent 
+	NetworkUtil	//判断网络
+	SPManager	//getSharedPreferences 工具类
+	StringUtil	//字符串工具类
 	GlideUtil //图片加载、本地视频缩略图
 ## 7.style
 	BaseAppTheme 全屏
@@ -74,7 +74,6 @@
 	OkFileCallBack
 	SimpleOkDlListener
 ## 10.数据库操作
-	```
 	//查询所有	
 	List<Bean> list = DbUtil.findAll(Bean.class);
 	//查询单个
@@ -97,7 +96,6 @@
                         .start()
                         .addCondition(StatisticsTime.Field.status, StatisticsTime.Status.start)
                          .end()
-	```
 ## 9.自带依赖dependencies
 	{
 		    api 'org.litepal.android:java:3.0.0'
