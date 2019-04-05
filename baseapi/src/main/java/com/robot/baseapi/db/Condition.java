@@ -23,10 +23,10 @@ public class Condition {
     private String value;
 
 
-    public Condition(@NonNull String key, @NonNull String symbol, @NonNull String value) {
+    public Condition(@NonNull String key, @NonNull String symbol, @NonNull Object value) {
         this.key = key;
         this.symbol = symbol;
-        this.value = value;
+        this.value = String.valueOf(value);
     }
 
     public String getKey() {
@@ -37,7 +37,7 @@ public class Condition {
         return symbol;
     }
 
-    public String getValue() {
+    public Object getValue() {
         return value;
     }
 
@@ -55,9 +55,9 @@ public class Condition {
         String like = "like";
     }
 
-    public void reset(String symbol, String value) {
+    public void reset(String symbol, Object value) {
         this.symbol = symbol;
-        this.value = value;
+        this.value = String.valueOf(value);
     }
 
     /**
@@ -68,8 +68,8 @@ public class Condition {
      * @param value
      * @return
      */
-    public static Condition newInstance(@NonNull String key, @NonNull String symbol, @NonNull String value) {
-        return new Condition(key, symbol, value);
+    public static Condition newInstance(@NonNull String key, @NonNull String symbol, @NonNull Object value) {
+        return new Condition(key, symbol, String.valueOf(value));
     }
 
     /**
@@ -79,8 +79,8 @@ public class Condition {
      * @param value
      * @return
      */
-    public static Condition newInstance(@NonNull String key, @NonNull String value) {
-        return new Condition(key, Symbol.equal, value);
+    public static Condition newInstance(@NonNull String key, @NonNull Object value) {
+        return new Condition(key, Symbol.equal, String.valueOf(value));
     }
 
     @Override

@@ -47,8 +47,6 @@ public abstract class BaseActivity extends CrashBaseActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         activitySate.put(getClass().getSimpleName() + "_exist", true);
-//        setVolumeControlStream(AudioManager.STREAM_MUSIC);
-
     }
     public void init(){
         initData();
@@ -86,24 +84,6 @@ public abstract class BaseActivity extends CrashBaseActivity {
     public void t(String msg){
         t(msg,Toast.LENGTH_SHORT);
     }
-    /**
-     * 主要的方法，重写dispatchTouchEvent
-     *
-     * @param ev
-     * @return
-     */
-    @Override
-    public boolean dispatchTouchEvent(MotionEvent ev) {
-//        switch (ev.getAction()) {
-//            //获取触摸动作，如果ACTION_UP，计时开始。
-//            case MotionEvent.ACTION_UP:
-//            case MotionEvent.ACTION_DOWN:
-//                break;
-//        }
-        return super.dispatchTouchEvent(ev);
-    }
-
-
     /**
      * 屏幕常亮
      */

@@ -49,7 +49,7 @@ public class ConditionBuilder {
         values = new String[conditions.size() + 1];
         for (int i = 0; i < conditions.size(); i++) {
             condition = conditions.get(i);
-            values[i + 1] = condition.getValue();
+            values[i + 1] = String.valueOf(condition.getValue());
             sb.append(condition.getKey() + condition.getSymbol() + "?");
             if (i != conditions.size() - 1 && i < symbols.size()) {
                 //除去最后一个
@@ -102,15 +102,15 @@ public class ConditionBuilder {
             return connectSymbol;
         }
 
-        public ConnectSymbol addCondition(String key, String value) {
-            addCondition(Condition.newInstance(key, value));
+        public ConnectSymbol addCondition(String key, Object value) {
+            addCondition(Condition.newInstance(key, String.valueOf(value)));
             return connectSymbol;
         }
 
 
 
-        public ConnectSymbol addCondition(String key, String symbol, String value) {
-            addCondition(Condition.newInstance(key, symbol, value));
+        public ConnectSymbol addCondition(String key, String symbol, Object value) {
+            addCondition(Condition.newInstance(key, symbol, String.valueOf(value)));
             return connectSymbol;
         }
 
@@ -127,12 +127,12 @@ public class ConditionBuilder {
             return connectCondition;
         }
 
-        public ConnectCondition resetCondition(String key, String symbol, String value) {
-            return resetCondition(Condition.newInstance(key, symbol, value));
+        public ConnectCondition resetCondition(String key, String symbol, Object value) {
+            return resetCondition(Condition.newInstance(key, symbol, String.valueOf(value)));
         }
 
-        public ConnectCondition resetCondition(String key, String value) {
-            return resetCondition(Condition.newInstance(key, value));
+        public ConnectCondition resetCondition(String key, Object value) {
+            return resetCondition(Condition.newInstance(key, String.valueOf(value)));
         }
     }
 
