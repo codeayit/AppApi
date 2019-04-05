@@ -66,8 +66,38 @@
 	PercentLayoutSytle 百分比布局的子空间
 ## 8.color
 	colors_base  常用颜色
-## 9.FileDownlaoder
-	
+## 9.FileDownlaoder 文件下载
+	OkDlListener	//下载监听
+	OkDlManager	//任务管理器，增删改查
+	OkDlService	//在AndroidManifest.xml 注册 
+	OkDlTask
+	OkFileCallBack
+	SimpleOkDlListener
+## 10.数据库操作
+	```
+	//查询所有	
+	List<Bean> list = DbUtil.findAll(Bean.class);
+	//查询单个
+	Bean bena = DbUtil.findFirst(AlarmBean.class);
+	//条件查询
+	Bean bena = DbUtil.findFirst(Bean.class，ConditionBuilder.getInstance()
+                        .start()
+                        .addCondition(StatisticsTime.Field.status, StatisticsTime.Status.start)
+                         .end());
+	//条件更新
+	 DbUtil.update(StatisticsTime.class, values, 
+                        ConditionBuilder.getInstance()
+                        .start()
+                        .addCondition(StatisticsTime.Field.status, StatisticsTime.Status.start)
+                         .end()
+                );
+		
+	//重要的 数据库操作条件创建
+	ConditionBuilder builder = ConditionBuilder.getInstance()
+                        .start()
+                        .addCondition(StatisticsTime.Field.status, StatisticsTime.Status.start)
+                         .end()
+	```
 ## 9.自带依赖dependencies
 	{
 		    api 'org.litepal.android:java:3.0.0'
