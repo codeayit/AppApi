@@ -60,10 +60,6 @@ public class NetWork {
     private NetCallback netCallback;
 
 
-//    public static void setGlobalSignCallback(SignCallback globalSignCallback) {
-//        NetWork.globalSignCallback = globalSignCallback;
-//    }
-
     public static void setGlobalNetCallback(NetCallback globalNetCallback) {
         NetWork.globalNetCallback = globalNetCallback;
     }
