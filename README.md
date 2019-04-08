@@ -56,25 +56,59 @@
 	DensityUtil	//px,sp,dp 互相转换
 	DeviceUtil	//获取设备信息
 	FileUtil
-	LogUtil
-	NetworkUtil
-	PermissionUtil //6.0以下权限判断（mic，camera）
-	SampleConstants
-	SPManager
-	StringUtil
+	LogUtil		//打印intent 
+	NetworkUtil	//判断网络
+	SPManager	//getSharedPreferences 工具类
+	StringUtil	//字符串工具类
+	GlideUtil //图片加载、本地视频缩略图
 ## 7.style
 	BaseAppTheme 全屏
 	PercentLayoutSytle 百分比布局的子空间
 ## 8.color
-	colors_base  常用颜色
-## 9.自带依赖dependencies
+	colors_base  常用颜色
+## 9.FileDownlaoder 文件下载
+	OkDlListener	//下载监听
+	OkDlManager	//任务管理器，增删改查
+	OkDlService	//在AndroidManifest.xml 注册 
+	OkDlTask
+	OkFileCallBack
+	SimpleOkDlListener
+## 10.数据库操作
+	//查询所有	
+	List<Bean> list = DbUtil.findAll(Bean.class);
+	//查询单个
+	Bean bena = DbUtil.findFirst(AlarmBean.class);
+	//条件查询
+	Bean bena = DbUtil.findFirst(Bean.class，ConditionBuilder.getInstance()
+                        .start()
+                        .addCondition(StatisticsTime.Field.status, StatisticsTime.Status.start)
+                         .end());
+	//条件更新
+	 DbUtil.update(StatisticsTime.class, values, 
+                        ConditionBuilder.getInstance()
+                        .start()
+                        .addCondition(StatisticsTime.Field.status, StatisticsTime.Status.start)
+                         .end()
+                );
+		
+	//重要的 数据库操作条件创建
+	ConditionBuilder builder = ConditionBuilder.getInstance()
+                        .start()
+                        .addCondition(StatisticsTime.Field.status, StatisticsTime.Status.start)
+                         .end()
+## 11.自带依赖dependencies
 	{
-		compile  'org.litepal.android:core:1.3.2' //数据库依赖，使用时要在自己的app的assets中添加 litepal.xml(详情查看litepal)
-		compile  'com.squareup.picasso:picasso:2.5.2' //图片加载工具
-		compile 'com.alibaba:fastjson:1.2.38' 
-		compile 'com.github.1053452188:LoadingLayout:master-SNAPSHOT' //loadinglayout
-		compile 'com.mylhyl:acp:1.1.7' //android 6.0 以上的权限判断
-		compile 'com.zhy:percent-support-extends:1.1.1' //百分比布局
+		    api 'org.litepal.android:java:3.0.0'
+		    api 'com.zhy:okhttputils:2.6.2'
+		    api 'com.alibaba:fastjson:1.2.38'
+		    api 'com.github.1053452188:LoadingLayout:335586df9f'
+		    api 'com.zhy:percent-support-extends:1.1.1'
+		    api 'com.github.1053452188:CrashSimple:98a1030565'
+		    api 'com.android.support:multidex:1.0.3'
+		    api 'com.github.1053452188:simpleklog:2bc9effebd'
+		    api 'com.zhy:base-rvadapter:3.0.3'
+		    api 'com.android.support:recyclerview-v7:27.1.1'
+		    api 'com.github.bumptech.glide:glide:4.8.0'
 	}
 	
 		
