@@ -8,9 +8,11 @@ import com.robot.baseapi.base.BaseApplication;
 import com.robot.baseapi.net.GlobalFilter;
 import com.robot.baseapi.net.NetWork;
 import com.zhy.http.okhttp.OkHttpUtils;
+import com.zhy.http.okhttp.log.LoggerInterceptor;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
@@ -26,19 +28,37 @@ public class ApiApplication extends BaseApplication {
     @Override
     public void onCreate() {
         super.onCreate();
+//
+//        NetWork.setGlobalFilter(new GlobalFilter() {
+//            @Override
+//            public void onPreResponse(int code, String json) {
+//                KLog.d("全局code 过滤： "+code);
+//                Toast.makeText(getApplicationContext(),"code:"+code,Toast.LENGTH_LONG).show();
+//            }
+//
+//            @Override
+//            public void onPreRequest(String url, HashMap<String, String> headers, HashMap<String, String> params) {
+//
+//            }
+//
+//        });
 
-        NetWork.setGlobalFilter(new GlobalFilter() {
-            @Override
-            public void onPreResponse(int code, String json) {
-                KLog.d("全局code 过滤： "+code);
-                Toast.makeText(getApplicationContext(),"code:"+code,Toast.LENGTH_LONG).show();
-            }
+        OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                .addInterceptor(new LoggerInterceptor("klog"))
+                .addInterceptor(new Interceptor() {
+                    @Override
+                    public Response intercept(Chain chain) throws IOException {
 
-            @Override
-            public void onPreRequest(String url, HashMap<String, String> headers, HashMap<String, String> params) {
 
-            }
 
-        });
+                        return null;
+                    }
+                })
+                .connectTimeout(20000L, TimeUnit.MILLISECONDS)
+                .readTimeout(20000L, TimeUnit.MILLISECONDS)
+                //其他配置
+                .build();
+        OkHttpUtils.initClient(okHttpClient);
+
     }
 }

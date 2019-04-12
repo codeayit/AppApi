@@ -125,6 +125,36 @@ public class AsyncTaskUtil {
         }
     }
 
+    /**
+     *
+     * @param task
+     * @param <P> 参数
+     * @param <T> 返回结果
+     */
+    public static<P,T> void run(Task5<P,T> task){
+        final Task5<P,T> t = task;
+        if (task!=null){
+            t.before(t.getParams());
+            Observable.just(t.getParams()).map(
+                    new Function<P[], T>() {
+                        @Override
+                        public T apply(P[] value) throws Exception {
+                            return t.taskRun(value);
+                        }
+                    })
+
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new Consumer<T>() {
+                        @Override
+                        public void accept(T value) throws Exception {
+                            t.success(t.getParams(),value);
+                        }
+                    });
+        }
+    }
+
+
 
 
     public interface Task<T> {
@@ -173,5 +203,23 @@ public class AsyncTaskUtil {
         public abstract T taskRun( P param);
         public abstract void success(P param,T t);
     }
+
+
+    public static abstract class Task5<P,T> {
+        private P[] params;
+
+        public Task5(P... params) {
+            this.params = params;
+        }
+
+        public P[] getParams() {
+            return params;
+        }
+
+        public abstract void before(P[] params);
+        public abstract T taskRun( P[] params);
+        public abstract void success(P[] params,T t);
+    }
+
 
 }
