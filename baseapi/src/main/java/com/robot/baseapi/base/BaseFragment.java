@@ -8,11 +8,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created by lny on 2017/12/12.
  */
 
 public abstract class BaseFragment extends Fragment {
+    private static final Map<String, Boolean> fragmentSate = new HashMap<>();
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -23,6 +27,7 @@ public abstract class BaseFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        fragmentSate.put(getClass().getSimpleName() + "_exist", true);
         initData();
     }
 
@@ -41,6 +46,41 @@ public abstract class BaseFragment extends Fragment {
 
     public void t(String msg){
         Toast.makeText(getContext(),msg,Toast.LENGTH_SHORT).show();
+    }
+
+
+    public static boolean isExist(Class<? extends BaseFragment> clazz) {
+
+        String key = clazz.getSimpleName() + "_exist";
+        if (fragmentSate.containsKey(key)) {
+            return fragmentSate.get(key);
+        }
+        return false;
+    }
+
+    public static boolean isActive(Class<? extends BaseFragment> clazz) {
+        String key = clazz.getSimpleName() + "_active";
+        if (fragmentSate.containsKey(key)) {
+            return fragmentSate.get(key);
+        }
+        return false;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        fragmentSate.put(getClass().getSimpleName() + "_active", true);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        fragmentSate.remove(getClass().getSimpleName() + "_active");
+    }
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        fragmentSate.remove(getClass().getSimpleName() + "_exist");
     }
 
 
