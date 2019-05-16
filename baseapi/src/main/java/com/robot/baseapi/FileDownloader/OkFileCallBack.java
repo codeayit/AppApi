@@ -73,7 +73,7 @@ public abstract class OkFileCallBack extends Callback<File> {
     @Override
     public File parseNetworkResponse(Response response, int id) throws Exception {
 //        return saveFile(response, id);
-        return saveFile(response, startsPoint, id);
+        return saveFile2(response, startsPoint, id);
     }
 
     /**
@@ -91,6 +91,68 @@ public abstract class OkFileCallBack extends Callback<File> {
      */
     public abstract void onStart(long totalLength);
 
+
+
+    public File saveFile2(Response response, final long startsPoint, final int id) throws IOException {
+        final ResponseBody body = response.body();
+        final long totalLength = body.contentLength() + startsPoint;
+        long currentLength = startsPoint;
+        InputStream inputStream  = body.byteStream();
+        // 随机访问文件，可以指定断点续传的起始位置
+        RandomAccessFile randomAccessFile = null;
+        File file = new File(destFileDir, destFileName);
+        if (file.getParentFile().exists()) {
+            file.getParentFile().mkdirs();
+        }
+
+        if (currentLength == 0 && file.exists()) {
+            file.delete();
+        }
+        OkHttpUtils.getInstance().getDelivery().execute(new Runnable() {
+            @Override
+            public void run() {
+                onStart(totalLength);
+            }
+        });
+        try {
+            randomAccessFile = new RandomAccessFile(file, "rws");
+
+            randomAccessFile.seek(currentLength);
+            byte[] buffer = new byte[1024];
+            int len=-1;
+            long startTime = System.currentTimeMillis();
+            while ((len=inputStream.read(buffer))!=-1 && !isCancle()){
+                currentLength += len;
+                randomAccessFile.write(buffer,0,len);
+                final long finalCurrentLength = currentLength ;
+                inProgressSubThread(finalCurrentLength, totalLength);
+                if (System.currentTimeMillis() - startTime > progressDuration) {
+                    OkHttpUtils.getInstance().getDelivery().execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            inProgress(finalCurrentLength * 1.0f / totalLength, totalLength, id);
+                        }
+                    });
+                    startTime = System.currentTimeMillis();
+                }
+            }
+            if (isCancle()) {
+                return null;
+            }
+            return file;
+
+        } finally {
+            try {
+                inputStream .close();
+
+                if (randomAccessFile != null) {
+                    randomAccessFile.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     public File saveFile(Response response, final long startsPoint, final int id) throws IOException {
         final ResponseBody body = response.body();
@@ -114,12 +176,12 @@ public abstract class OkFileCallBack extends Callback<File> {
             }
         });
         try {
-            randomAccessFile = new RandomAccessFile(file, "rwd");
+            randomAccessFile = new RandomAccessFile(file, "rws");
             //Chanel NIO中的用法，由于RandomAccessFile没有使用缓存策略，直接使用会使得下载速度变慢，亲测缓存下载3.3秒的文件，用普通的RandomAccessFile需要20多秒。
             channelOut = randomAccessFile.getChannel();
             // 内存映射，直接使用RandomAccessFile，是用其seek方法指定下载的起始位置，使用缓存下载，在这里指定下载位置。
             MappedByteBuffer mappedBuffer = channelOut.map(FileChannel.MapMode.READ_WRITE, startsPoint, total - startsPoint);
-            byte[] buffer = new byte[2048];
+            byte[] buffer = new byte[1024];
             int len;
             long sum = startsPoint;
             long startTime = System.currentTimeMillis();
