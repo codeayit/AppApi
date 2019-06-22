@@ -28,38 +28,40 @@ public class OkDlService extends BaseService {
     public int onStartCommand(Intent intent, int flags, int startId) {
         KLog.d("OkDlService:onStartCommand()");
         LogUtil.printIntent(intent);
+        if (intent != null) {
 
-        Bundle extras = intent.getExtras();
 
-        if (extras!=null&& extras.containsKey("action")){
-            String action = intent.getStringExtra("action");
-            switch (action){
-                case "init":
-                    okDlManager.init(intent.getIntExtra("task_count",2),intent.getLongExtra("progress_duration",1000));
-                    break;
-                case "add":
-                    okDlManager.add(
-                            intent.getIntExtra("flag",0),
-                            intent.getStringExtra("url"),
-                            intent.getStringExtra("dir"),
-                            intent.getStringExtra("fileName")
-                    );
-                    break;
-                case "cancle":
-                    okDlManager.cancle(intent.getStringExtra("url"));
-                    break;
-                case "cancleAll":
-                    okDlManager.cancleAll();
-                    break;
-                case "pause":
-                    okDlManager.pause(intent.getStringExtra("url"));
-                    break;
-                case "pauseAll":
-                    okDlManager.pauseAll();
-                    break;
+            Bundle extras = intent.getExtras();
+
+            if (extras != null && extras.containsKey("action")) {
+                String action = intent.getStringExtra("action");
+                switch (action) {
+                    case "init":
+                        okDlManager.init(intent.getIntExtra("task_count", 2), intent.getLongExtra("progress_duration", 1000));
+                        break;
+                    case "add":
+                        okDlManager.add(
+                                intent.getIntExtra("flag", 0),
+                                intent.getStringExtra("url"),
+                                intent.getStringExtra("dir"),
+                                intent.getStringExtra("fileName")
+                        );
+                        break;
+                    case "cancle":
+                        okDlManager.cancle(intent.getStringExtra("url"));
+                        break;
+                    case "cancleAll":
+                        okDlManager.cancleAll();
+                        break;
+                    case "pause":
+                        okDlManager.pause(intent.getStringExtra("url"));
+                        break;
+                    case "pauseAll":
+                        okDlManager.pauseAll();
+                        break;
+                }
             }
         }
-
         return super.onStartCommand(intent, flags, startId);
     }
 
