@@ -10,6 +10,8 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.ayit.klog.KLog;
 import com.robot.baseapi.base.BaseActivity;
+import com.robot.baseapi.db.ConditionBuilder;
+import com.robot.baseapi.db.DbUtil;
 import com.robot.baseapi.net.NetCallback;
 import com.robot.baseapi.net.NetWork;
 import com.robot.baseapi.net.NetWorkStringCallBack;
@@ -42,6 +44,15 @@ public class MainActivity extends BaseActivity {
     }
 
     public void btn2(View view){
+
+//        DbUtil.find(TestDb.class,ConditionBuilder.getInstance()
+//        .start()
+//        .addCondition("","")
+//                .or()
+//        .end());
+//
+
+
         com.alibaba.fastjson.JSONObject data = new com.alibaba.fastjson.JSONObject();
 
         JSONArray list = new JSONArray();
