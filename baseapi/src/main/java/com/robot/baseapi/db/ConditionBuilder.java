@@ -1,8 +1,5 @@
 package com.robot.baseapi.db;
 
-import com.alibaba.fastjson.JSON;
-import com.ayit.klog.KLog;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -66,6 +63,7 @@ public class ConditionBuilder {
         List<String> vs = new ArrayList<>();
         StringBuilder builder = new StringBuilder();
         Condition c = null;
+        List<String> symbolsList = new ArrayList<>(symbols);
         for (int i=0;i<conditions.size();i++){
             c = conditions.get(i);
             if ("( )".contains(c.getKey())){
@@ -79,14 +77,14 @@ public class ConditionBuilder {
                     i++;
                     c = conditions.get(i);
                     builder.append(" "+c.getKey()+" ");
-                    if (symbols.size()>0) {
-                        builder.append(" " + symbols.remove(0) + " ");
+                    if (symbolsList.size()>0) {
+                        builder.append(" " + symbolsList.remove(0) + " ");
                     }
                     continue;
                 }
 
-                if (symbols.size()>0) {
-                    builder.append(" " + symbols.remove(0) + " ");
+                if (symbolsList.size()>0) {
+                    builder.append(" " + symbolsList.remove(0) + " ");
                 }
             }
 
@@ -94,7 +92,7 @@ public class ConditionBuilder {
         vs.add(0,builder.toString());
 
         String[] values2 = vs.toArray(new String[1]);
-        KLog.json(JSON.toJSONString(values2));
+
         return values2;
     }
 
