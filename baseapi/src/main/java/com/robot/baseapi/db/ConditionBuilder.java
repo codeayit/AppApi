@@ -1,5 +1,8 @@
 package com.robot.baseapi.db;
 
+import com.alibaba.fastjson.JSON;
+import com.ayit.klog.KLog;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,19 +47,19 @@ public class ConditionBuilder {
      * @return
      */
     public String[] condition() {
-        StringBuilder sb = new StringBuilder();
-        Condition condition = null;
-        values = new String[conditions.size() + 1];
-        for (int i = 0; i < conditions.size(); i++) {
-            condition = conditions.get(i);
-            values[i + 1] = String.valueOf(condition.getValue());
-            sb.append(condition.getKey() + condition.getSymbol() + "?");
-            if (i != conditions.size() - 1 && i < symbols.size()) {
-                //除去最后一个
-                sb.append(" " + symbols.get(i) + " ");
-            }
-        }
-        values[0] = sb.toString();
+//        StringBuilder sb = new StringBuilder();
+//        Condition condition = null;
+//        values = new String[conditions.size() + 1];
+//        for (int i = 0; i < conditions.size(); i++) {
+//            condition = conditions.get(i);
+//            values[i + 1] = String.valueOf(condition.getValue());
+//            sb.append(condition.getKey() + condition.getSymbol() + "?");
+//            if (i != conditions.size() - 1 && i < symbols.size()) {
+//                //除去最后一个
+//                sb.append(" " + symbols.get(i) + " ");
+//            }
+//        }
+//        values[0] = sb.toString();
 //        KLog.json(JSON.toJSONString(values));
 
 
@@ -91,7 +94,7 @@ public class ConditionBuilder {
         vs.add(0,builder.toString());
 
         String[] values2 = vs.toArray(new String[1]);
-
+        KLog.json(JSON.toJSONString(values2));
         return values2;
     }
 

@@ -34,7 +34,28 @@ public class MainActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(getContext());
+        ConditionBuilder end = ConditionBuilder.getInstance()
+                .start()
+                .left()
+                .addCondition("a", "a")
+                .or()
+                .addCondition("b","b")
+                .right()
+                .and()
+                .left()
+                .addCondition("c","c")
+                .or()
+                .addCondition("d","d")
+                .right()
+                .end();
+        String[] condition = end.condition();
 
+        StringBuilder sb = new StringBuilder();
+
+        for (String s:condition){
+            sb.append(s);
+        }
+        KLog.d(sb.toString());
 
     }
 
@@ -44,28 +65,23 @@ public class MainActivity extends BaseActivity {
     }
 
     public void btn2(View view){
-//
-//        DbUtil.find(TestDb.class,ConditionBuilder.getInstance()
-//        .start()
-//        .addCondition("","")
-//                .or()
-//        .end());
+
 //
 
 
-        com.alibaba.fastjson.JSONObject data = new com.alibaba.fastjson.JSONObject();
-
-        JSONArray list = new JSONArray();
-        com.alibaba.fastjson.JSONObject jo = new com.alibaba.fastjson.JSONObject();
-        jo.put("boxId", 1);
-        jo.put("count", 1);
-        list.add(jo);
-
-        data.put("deviceId", 1);
-        data.put("accountId", 255);
-        data.put("customer", "吃豪杰");
-        data.put("deviceSN", "lnyserialno");
-        data.put("list", list);
+//        com.alibaba.fastjson.JSONObject data = new com.alibaba.fastjson.JSONObject();
+//
+//        JSONArray list = new JSONArray();
+//        com.alibaba.fastjson.JSONObject jo = new com.alibaba.fastjson.JSONObject();
+//        jo.put("boxId", 1);
+//        jo.put("count", 1);
+//        list.add(jo);
+//
+//        data.put("deviceId", 1);
+//        data.put("accountId", 255);
+//        data.put("customer", "吃豪杰");
+//        data.put("deviceSN", "lnyserialno");
+//        data.put("list", list);
 //        KLog.d(JSON.toJSONString(data));
 
 //        OkHttpUtils.postString()
@@ -89,23 +105,23 @@ public class MainActivity extends BaseActivity {
 
 
 
-        NetWork.getInstance(getContext())
-                .postString()
-                .url("http://192.168.168.185:9090/testPost")
-                .postStringObject(data)
-//                .globalCodeFilter(false)
-                .build()
-                .execute(new NetWorkStringCallBack() {
-                    @Override
-                    public void onError(String msg) {
-
-                    }
-                    @Override
-                    public void onResponse(String s) {
-                        t("123");
-                    }
-
-                });
+//        NetWork.getInstance(getContext())
+//                .postString()
+//                .url("http://192.168.168.185:9090/testPost")
+//                .postStringObject(data)
+////                .globalCodeFilter(false)
+//                .build()
+//                .execute(new NetWorkStringCallBack() {
+//                    @Override
+//                    public void onError(String msg) {
+//
+//                    }
+//                    @Override
+//                    public void onResponse(String s) {
+//                        t("123");
+//                    }
+//
+//                });
     }
 
     @Override
