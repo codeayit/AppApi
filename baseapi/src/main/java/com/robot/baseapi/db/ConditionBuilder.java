@@ -58,7 +58,41 @@ public class ConditionBuilder {
         }
         values[0] = sb.toString();
 //        KLog.json(JSON.toJSONString(values));
-        return values;
+
+
+        List<String> vs = new ArrayList<>();
+        StringBuilder builder = new StringBuilder();
+        Condition c = null;
+        for (int i=0;i<conditions.size();i++){
+            c = conditions.get(i);
+            if ("( )".contains(c.getKey())){
+                builder.append(" "+c.getKey()+" ");
+            }else{
+
+                builder.append(c.getKey() + c.getSymbol() + "?");
+                vs.add(String.valueOf(c.getValue()));
+
+                if (conditions.size()>(i+1) && ")".contains(conditions.get(i+1).getKey())){
+                    i++;
+                    c = conditions.get(i);
+                    builder.append(" "+c.getKey()+" ");
+                    if (symbols.size()>0) {
+                        builder.append(" " + symbols.remove(0) + " ");
+                    }
+                    continue;
+                }
+
+                if (symbols.size()>0) {
+                    builder.append(" " + symbols.remove(0) + " ");
+                }
+            }
+
+        }
+        vs.add(0,builder.toString());
+
+        String[] values2 = vs.toArray(new String[1]);
+
+        return values2;
     }
 
 
@@ -82,9 +116,15 @@ public class ConditionBuilder {
             return connectCondition;
         }
 
+
         public ConnectCondition or() {
             symbols.add("or");
             return connectCondition;
+        }
+
+        public ConnectSymbol right() {
+            connectCondition.addCondition(Condition.newInstance(")", ""));
+            return connectSymbol;
         }
 
         public ConditionBuilder end() {
@@ -105,6 +145,11 @@ public class ConditionBuilder {
         public ConnectSymbol addCondition(String key, Object value) {
             addCondition(Condition.newInstance(key, String.valueOf(value)));
             return connectSymbol;
+        }
+
+        public ConnectCondition left() {
+            addCondition(Condition.newInstance("(", ""));
+            return connectCondition;
         }
 
 
