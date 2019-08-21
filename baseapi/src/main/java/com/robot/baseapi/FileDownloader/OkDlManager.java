@@ -122,13 +122,16 @@ public class OkDlManager {
     }
 
     public void addTask(int flag, String url, String dir, String fileName) {
-        Intent intent = new Intent(mApplication, OkDlService.class);
-        intent.putExtra("action", "add");
-        intent.putExtra("flag", flag);
-        intent.putExtra("url", url);
-        intent.putExtra("dir", dir);
-        intent.putExtra("fileName", fileName);
-        mApplication.startService(intent);
+        if (mApplication!=null){
+            Intent intent = new Intent(mApplication, OkDlService.class);
+            intent.putExtra("action", "add");
+            intent.putExtra("flag", flag);
+            intent.putExtra("url", url);
+            intent.putExtra("dir", dir);
+            intent.putExtra("fileName", fileName);
+            mApplication.startService(intent);
+        }
+
     }
 
     public boolean resumeTask(String url) {
@@ -325,10 +328,12 @@ public class OkDlManager {
     }
 
     public void pauseTask(@NonNull String url) {
-        Intent intent = new Intent(mApplication, OkDlService.class);
-        intent.putExtra("action", "pause");
-        intent.putExtra("url", url);
-        mApplication.startService(intent);
+        if (mApplication!=null) {
+            Intent intent = new Intent(mApplication, OkDlService.class);
+            intent.putExtra("action", "pause");
+            intent.putExtra("url", url);
+            mApplication.startService(intent);
+        }
     }
 
     protected void pause(@NonNull String url) {
@@ -351,9 +356,11 @@ public class OkDlManager {
 
 
     public void pauseAllTask() {
-        Intent intent = new Intent(mApplication, OkDlService.class);
-        intent.putExtra("action", "pauseAll");
-        mApplication.startService(intent);
+        if (mApplication!=null) {
+            Intent intent = new Intent(mApplication, OkDlService.class);
+            intent.putExtra("action", "pauseAll");
+            mApplication.startService(intent);
+        }
     }
 
     protected void pauseAll() {
@@ -403,11 +410,13 @@ public class OkDlManager {
     public static void init(@NonNull Application application, int parallelTaskCount, long progressDuration) {
         KLog.d("static init: " + parallelTaskCount + " : " + progressDuration);
         mApplication = application;
-        Intent serviceIntent = new Intent(application, OkDlService.class);
-        serviceIntent.putExtra("action", "init");
-        serviceIntent.putExtra("task_count", parallelTaskCount);
-        serviceIntent.putExtra("progress_duration", progressDuration);
-        application.startService(serviceIntent);
+        if (mApplication!=null) {
+            Intent serviceIntent = new Intent(application, OkDlService.class);
+            serviceIntent.putExtra("action", "init");
+            serviceIntent.putExtra("task_count", parallelTaskCount);
+            serviceIntent.putExtra("progress_duration", progressDuration);
+            application.startService(serviceIntent);
+        }
     }
 
     protected void onCreate() {
