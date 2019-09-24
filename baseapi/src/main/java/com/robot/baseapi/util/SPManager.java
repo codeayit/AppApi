@@ -17,6 +17,11 @@ public class SPManager {
         sp = context.getSharedPreferences("config", Context.MODE_PRIVATE);
     }
 
+    public static SharedPreferences getSPInstance(){
+        return sp;
+    }
+
+
     synchronized public static void put(String key, String value) {
         sp.edit().putString(key, value).commit();
     }
@@ -37,6 +42,18 @@ public class SPManager {
         sp.edit().putFloat(key, value).commit();
     }
 
+    synchronized public static boolean remove(String key) {
+        if (sp.contains(key)){
+            sp.edit().remove(key).commit();
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    public static boolean contains(String key){
+        return sp.contains(key);
+    }
 
     public static String get(String key) {
         return sp.getString(key, null);
@@ -52,6 +69,10 @@ public class SPManager {
 
     public static String getString(String key) {
         return sp.getString(key, "");
+    }
+
+    public static String getString(String key,String defultValue){
+        return sp.getString(key, defultValue);
     }
 
     public static int getInt(String key) {
@@ -72,7 +93,6 @@ public class SPManager {
     public static float getFloat(String key){
         return sp.getFloat(key,DEAFULT);
     }
-
 
 
 }
