@@ -1,5 +1,8 @@
 package com.robot.baseapi.db;
 
+import com.alibaba.fastjson.JSON;
+import com.ayit.klog.KLog;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +14,7 @@ import java.util.List;
 public class ConditionBuilder {
     private ConnectSymbol connectSymbol = new ConnectSymbol();
     private ConnectCondition connectCondition = new ConnectCondition();
+    private boolean isLog;
 
 
     public static ConditionBuilder getInstance() {
@@ -28,10 +32,17 @@ public class ConditionBuilder {
         return connectCondition;
     }
 
+    public ConditionBuilder isLog() {
+        isLog = true;
+        return this;
+    }
+
     public ConditionBuilder() {
         conditions = new ArrayList<>();
         symbols = new ArrayList<>();
+        isLog = false;
     }
+
 
     public int size() {
         return size;
@@ -90,9 +101,17 @@ public class ConditionBuilder {
 
         }
         vs.add(0,builder.toString());
-
         String[] values2 = vs.toArray(new String[1]);
 
+        if (isLog){
+            String sql = values2[0];
+            sql+=" ";
+            for (int i=1;i<values2.length;i++){
+                sql+=values2[i]+",";
+            }
+            sql = sql.substring(0,sql.length()-1);
+            KLog.d(sql);
+        }
         return values2;
     }
 

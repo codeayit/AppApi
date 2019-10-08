@@ -35,6 +35,7 @@ public class MainActivity extends BaseActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(getContext());
         ConditionBuilder end = ConditionBuilder.getInstance()
+                .isLog()
                 .start()
                 .left()
                 .addCondition("a", "a")
@@ -50,12 +51,11 @@ public class MainActivity extends BaseActivity {
                 .end();
         String[] condition = end.condition();
 
-        StringBuilder sb = new StringBuilder();
-
-        for (String s:condition){
-            sb.append(s);
-        }
-        KLog.d(sb.toString());
+//        StringBuilder sb = new StringBuilder();
+//        for (String s:condition){
+//            sb.append(s+",");
+//        }
+//        KLog.d(sb.toString());
 
     }
 
