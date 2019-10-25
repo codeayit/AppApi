@@ -17,10 +17,14 @@ import com.robot.baseapi.net.NetWork;
 import com.robot.baseapi.net.NetWorkStringCallBack;
 import com.robot.baseapi.net.SignCallback;
 import com.robot.baseapi.util.AppUtil;
+import com.yanzhenjie.permission.AndPermission;
+import com.yanzhenjie.permission.runtime.Permission;
 import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.StringCallback;
 
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import butterknife.ButterKnife;
@@ -34,34 +38,53 @@ public class MainActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(getContext());
-        ConditionBuilder end = ConditionBuilder.getInstance()
-                .isLog()
-                .start()
-                .left()
-                .addCondition("a", "a")
-                .or()
-                .addCondition("b","b")
-                .right()
-                .and()
-                .left()
-                .addCondition("c","c")
-                .or()
-                .addCondition("d","d")
-                .right()
-                .end();
-        String[] condition = end.condition();
 
-//        StringBuilder sb = new StringBuilder();
-//        for (String s:condition){
-//            sb.append(s+",");
-//        }
-//        KLog.d(sb.toString());
+        AndPermission.with(this)
+                .runtime()
+                .permission(Permission.Group.STORAGE)
+                .onGranted(permissions -> {
+                    // Storage permission are allowed.  同意
+                    KLog.d("权限 ： onGranted");
+                    init();
+                })
+                .onDenied(permissions -> {
+                    // Storage permission are not allowed. 拒绝
+                    KLog.d("权限 ： onDenied");
+                    init();
+                })
+                .start();
 
     }
 
     @Override
     public void initData() {
+        DbUtil.clear(TestDb.class);
 
+        List<TestDb> data = new ArrayList<>();
+        data.add(new TestDb(1,1));
+        data.add(new TestDb(2,1));
+        data.add(new TestDb(3,1));
+        data.add(new TestDb(1,2));
+        data.add(new TestDb(2,2));
+        data.add(new TestDb(3,2));
+        DbUtil.save(data);
+
+
+        ConditionBuilder end = ConditionBuilder.getInstance()
+                .isLog()
+                .start()
+                .left()
+                .addCondition("status", "1")
+                .or()
+                .addCondition("status","2")
+                .right()
+                .and()
+                .addCondition("type","1")
+                .end();
+
+        List<TestDb> testDbs = DbUtil.find(TestDb.class, end);
+
+        KLog.json(JSON.toJSONString(testDbs));
     }
 
     public void btn2(View view){
