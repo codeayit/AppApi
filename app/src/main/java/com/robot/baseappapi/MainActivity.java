@@ -58,33 +58,33 @@ public class MainActivity extends BaseActivity {
 
     @Override
     public void initData() {
-        DbUtil.clear(TestDb.class);
-
-        List<TestDb> data = new ArrayList<>();
-        data.add(new TestDb(1,1));
-        data.add(new TestDb(2,1));
-        data.add(new TestDb(3,1));
-        data.add(new TestDb(1,2));
-        data.add(new TestDb(2,2));
-        data.add(new TestDb(3,2));
-        DbUtil.save(data);
-
-
-        ConditionBuilder end = ConditionBuilder.getInstance()
-                .isLog()
-                .start()
-                .left()
-                .addCondition("status", "1")
-                .or()
-                .addCondition("status","2")
-                .right()
-                .and()
-                .addCondition("type","1")
-                .end();
-
-        List<TestDb> testDbs = DbUtil.find(TestDb.class, end);
-
-        KLog.json(JSON.toJSONString(testDbs));
+//        DbUtil.clear(TestDb.class);
+//
+//        List<TestDb> data = new ArrayList<>();
+//        data.add(new TestDb(1,1));
+//        data.add(new TestDb(2,1));
+//        data.add(new TestDb(3,1));
+//        data.add(new TestDb(1,2));
+//        data.add(new TestDb(2,2));
+//        data.add(new TestDb(3,2));
+//        DbUtil.save(data);
+//
+//
+//        ConditionBuilder end = ConditionBuilder.getInstance()
+//                .isLog()
+//                .start()
+//                .left()
+//                .addCondition("status", "1")
+//                .or()
+//                .addCondition("status","2")
+//                .right()
+//                .and()
+//                .addCondition("type","1")
+//                .end();
+//
+//        List<TestDb> testDbs = DbUtil.find(TestDb.class, end);
+//
+//        KLog.json(JSON.toJSONString(testDbs));
     }
 
     public void btn2(View view){

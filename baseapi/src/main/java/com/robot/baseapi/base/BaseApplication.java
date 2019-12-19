@@ -27,10 +27,10 @@ public class BaseApplication extends MultiDexApplication {
     @Override
     public void onCreate() {
         super.onCreate();
-        LitePal.initialize(this);
+//        LitePal.initialize(this);
         instance  = this;
-        iniKlog();
-        iniSp();
+//        iniKlog();
+//        iniSp();
         initCrash();
     }
 
