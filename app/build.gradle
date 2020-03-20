@@ -46,8 +46,8 @@ dependencies {
     implementation 'com.yanzhenjie.permission:support:2.0.1'
 
 
-    api project(':baseapi')
-//    implementation('com.github.codeayit:AppApi:cb9b2cf077') {
-//        exclude module: 'LoadingLayout'
-//    }
+//    api project(':baseapi')
+    implementation('com.github.codeayit:AppApi:0e207767c1') {
+        exclude module: 'LoadingLayout'
+    }
 }
