@@ -5,7 +5,8 @@ android {
     defaultConfig {
         applicationId "com.robot.baseappapi"
         minSdkVersion 19
-        targetSdkVersion 28
+        //noinspection ExpiredTargetSdkVersion
+        targetSdkVersion 21
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -38,13 +39,15 @@ dependencies {
     implementation 'com.android.support:recyclerview-v7:28.+'
 
     testImplementation 'junit:junit:4.12'
-    api project(':baseapi')
     implementation 'com.jakewharton:butterknife:8.4.0'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
 
     //权限
     implementation 'com.yanzhenjie.permission:support:2.0.1'
-//    implementation('com.github.codeayit:AppApi:0b223da322') {
-//        exclude module: 'LoadingLayout'
-//    }
+
+
+    api project(':baseapi')
+    implementation('com.github.codeayit:AppApi:51c8f9dc33') {
+        exclude module: 'LoadingLayout'
+    }
 }
