@@ -40,7 +40,7 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     api project(':baseapi')
     implementation 'com.jakewharton:butterknife:8.4.0'
-    annotationProcessor 'com.jakewharton:butterknife-compiler:8.4.0'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
 
     //权限
     implementation 'com.yanzhenjie.permission:support:2.0.1'
