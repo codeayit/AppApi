@@ -72,7 +72,7 @@ public abstract class OkFileCallBack extends Callback<File> {
 
     @Override
     public File parseNetworkResponse(Response response, int id) throws Exception {
-//        return saveFile(response, id);
+//        return saveFile(response,startsPoint, id);
         return saveFile2(response, startsPoint, id);
     }
 
@@ -118,7 +118,7 @@ public abstract class OkFileCallBack extends Callback<File> {
             randomAccessFile = new RandomAccessFile(file, "rws");
 
             randomAccessFile.seek(currentLength);
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[5*1024*1024];
             int len=-1;
             long startTime = System.currentTimeMillis();
             while ((len=inputStream.read(buffer))!=-1 && !isCancle()){

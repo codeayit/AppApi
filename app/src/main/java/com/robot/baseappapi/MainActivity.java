@@ -9,6 +9,9 @@ import android.view.View;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.ayit.klog.KLog;
+import com.robot.baseapi.FileDownloader.OkDlManager;
+import com.robot.baseapi.FileDownloader.OkDlTask;
+import com.robot.baseapi.FileDownloader.SimpleOkDlListener;
 import com.robot.baseapi.base.BaseActivity;
 import com.robot.baseapi.db.ConditionBuilder;
 import com.robot.baseapi.db.DbUtil;
@@ -23,6 +26,9 @@ import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.StringCallback;
 
 
+import org.litepal.LitePal;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +39,9 @@ import okhttp3.MediaType;
 
 public class MainActivity extends BaseActivity {
     String action ="com.robot.videoplayer.TestActivity";
+
+    long p = 0;
+    long time = System.currentTimeMillis();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,6 +67,9 @@ public class MainActivity extends BaseActivity {
 
     @Override
     public void initData() {
+        LitePal.initialize(getApplicationContext());
+        OkDlManager.init(getApplication(),1,1000);
+
 //        DbUtil.clear(TestDb.class);
 //
 //        List<TestDb> data = new ArrayList<>();
@@ -86,22 +98,58 @@ public class MainActivity extends BaseActivity {
 //
 //        KLog.json(JSON.toJSONString(testDbs));
 
-        String str = "{\"method\":\"get\",\"url\":\"http:\\\\/\\\\/www.houluzhai.top:9310\\\\/coffeeVendor\\\\/device\\\\/getGoodsLibsStrategyDetailByDeviceId\",\"params\":{\"deviceSn\":\"44:18:08:09:3f:c2\",\"deviceId\":\"80\"},\"headers\":{\"sn\":\"44:18:08:09:3f:c2\"},\"response_success\":{\"message\":\"ok\",\"content\":{\"agent\":42,\"remark\":\"\",\"isDel\":0,\"updated\":\"\",\"strategyCode\":\"STR000066\",\"isWater\":1,\"priceList\":[{\"cupParam\":\"[{\\\"index\\\":0,\\\"value\\\":\\\"大杯\\\",\\\"isShow\\\":true,\\\"waterWeight\\\":\\\"20\\\",\\\"materialWeight\\\":\\\"30\\\",\\\"price\\\":\\\"3\\\"},{\\\"index\\\":1,\\\"value\\\":\\\"中杯\\\",\\\"isShow\\\":false},{\\\"index\\\":2,\\\"value\\\":\\\"小杯\\\",\\\"isShow\\\":false}]\",\"libsCupParam\":\"\",\"cupPrice\":\"\",\"updated\":\"\",\"imageUrl\":\"http:\\\\/\\\\/www.houluzhai.top\\\\/imgs\\\\/1220d907cedf4de8ad3193134592fd70卡布奇诺_coffee.jpg\",\"isHot\":\"1\",\"strategyId\":66,\"id\":270,\"boxCode\":\"1号通道\",\"hotPrice\":0,\"price\":20,\"createTime\":\"2019-12-26 11:07:07\",\"libsId\":102,\"boxId\":272,\"goodsName\":\"卡布奇诺咖啡\",\"created\":\"jakecy\",\"imagePath\":\"\"},{\"cupParam\":\"[{\\\"index\\\":0,\\\"value\\\":\\\"大杯\\\",\\\"isShow\\\":true,\\\"waterWeight\\\":\\\"20\\\",\\\"materialWeight\\\":\\\"10\\\",\\\"price\\\":\\\"10\\\"},{\\\"index\\\":1,\\\"value\\\":\\\"中杯\\\",\\\"isShow\\\":true,\\\"waterWeight\\\":\\\"30\\\",\\\"materialWeight\\\":\\\"20\\\",\\\"price\\\":\\\"5\\\"},{\\\"index\\\":2,\\\"value\\\":\\\"小杯\\\",\\\"isShow\\\":true,\\\"waterWeight\\\":\\\"35\\\",\\\"materialWeight\\\":\\\"30\\\",\\\"price\\\":\\\"0\\\"}]\",\"libsCupParam\":\"\",\"cupPrice\":\"\",\"updated\":\"\",\"imageUrl\":\"http:\\\\/\\\\/www.houluzhai.top\\\\/imgs\\\\/56be7cf503d34ce3bde58db4fa1ded65HarinaCoffee.jpg\",\"isCold\":1,\"isHot\":\"1\",\"strategyId\":66,\"id\":271,\"boxCode\":\"2号通道\",\"hotPrice\":3,\"price\":15,\"createTime\":\"2019-12-26 11:07:07\",\"libsId\":102,\"coldPrice\":0,\"boxId\":273,\"goodsName\":\"瑞幸咖啡\",\"created\":\"jakecy\",\"imagePath\":\"\"},{\"cupParam\":\"[{\\\"index\\\":0,\\\"value\\\":\\\"大杯\\\",\\\"isShow\\\":true,\\\"waterWeight\\\":\\\"20\\\",\\\"materialWeight\\\":\\\"10\\\",\\\"price\\\":\\\"10\\\"},{\\\"index\\\":1,\\\"value\\\":\\\"中杯\\\",\\\"isShow\\\":true,\\\"waterWeight\\\":\\\"30\\\",\\\"materialWeight\\\":\\\"20\\\",\\\"price\\\":\\\"5\\\"},{\\\"index\\\":2,\\\"value\\\":\\\"小杯\\\",\\\"isShow\\\":true,\\\"waterWeight\\\":\\\"35\\\",\\\"materialWeight\\\":\\\"30\\\",\\\"price\\\":\\\"0\\\"}]\",\"libsCupParam\":\"\",\"cupPrice\":\"\",\"updated\":\"\",\"imageUrl\":\"http:\\\\/\\\\/www.houluzhai.top\\\\/imgs\\\\/1e9d2b0fee4a4fdc96436cc017833890焦糖拿铁咖啡.jpg\",\"isHot\":\"1\",\"strategyId\":66,\"id\":272,\"boxCode\":\"3号通道\",\"hotPrice\":0,\"price\":13,\"createTime\":\"2019-12-26 11:07:07\",\"libsId\":102,\"boxId\":274,\"goodsName\":\"焦糖拿铁\",\"created\":\"jakecy\",\"imagePath\":\"\"}],\"companyName\":\"名捕科技有限公司(代理商)\",\"id\":66,\"libsName\":\"\",\"createTime\":\"2019-12-26 11:08:28\",\"libsId\":102,\"companyType\":1,\"strategyName\":\"元旦优惠价\",\"created\":\"jakecy\",\"companyId\":42},\"code\":200,\"success\":true}}";
+//        String str = "{\"method\":\"get\",\"url\":\"http:\\\\/\\\\/www.houluzhai.top:9310\\\\/coffeeVendor\\\\/device\\\\/getGoodsLibsStrategyDetailByDeviceId\",\"params\":{\"deviceSn\":\"44:18:08:09:3f:c2\",\"deviceId\":\"80\"},\"headers\":{\"sn\":\"44:18:08:09:3f:c2\"},\"response_success\":{\"message\":\"ok\",\"content\":{\"agent\":42,\"remark\":\"\",\"isDel\":0,\"updated\":\"\",\"strategyCode\":\"STR000066\",\"isWater\":1,\"priceList\":[{\"cupParam\":\"[{\\\"index\\\":0,\\\"value\\\":\\\"大杯\\\",\\\"isShow\\\":true,\\\"waterWeight\\\":\\\"20\\\",\\\"materialWeight\\\":\\\"30\\\",\\\"price\\\":\\\"3\\\"},{\\\"index\\\":1,\\\"value\\\":\\\"中杯\\\",\\\"isShow\\\":false},{\\\"index\\\":2,\\\"value\\\":\\\"小杯\\\",\\\"isShow\\\":false}]\",\"libsCupParam\":\"\",\"cupPrice\":\"\",\"updated\":\"\",\"imageUrl\":\"http:\\\\/\\\\/www.houluzhai.top\\\\/imgs\\\\/1220d907cedf4de8ad3193134592fd70卡布奇诺_coffee.jpg\",\"isHot\":\"1\",\"strategyId\":66,\"id\":270,\"boxCode\":\"1号通道\",\"hotPrice\":0,\"price\":20,\"createTime\":\"2019-12-26 11:07:07\",\"libsId\":102,\"boxId\":272,\"goodsName\":\"卡布奇诺咖啡\",\"created\":\"jakecy\",\"imagePath\":\"\"},{\"cupParam\":\"[{\\\"index\\\":0,\\\"value\\\":\\\"大杯\\\",\\\"isShow\\\":true,\\\"waterWeight\\\":\\\"20\\\",\\\"materialWeight\\\":\\\"10\\\",\\\"price\\\":\\\"10\\\"},{\\\"index\\\":1,\\\"value\\\":\\\"中杯\\\",\\\"isShow\\\":true,\\\"waterWeight\\\":\\\"30\\\",\\\"materialWeight\\\":\\\"20\\\",\\\"price\\\":\\\"5\\\"},{\\\"index\\\":2,\\\"value\\\":\\\"小杯\\\",\\\"isShow\\\":true,\\\"waterWeight\\\":\\\"35\\\",\\\"materialWeight\\\":\\\"30\\\",\\\"price\\\":\\\"0\\\"}]\",\"libsCupParam\":\"\",\"cupPrice\":\"\",\"updated\":\"\",\"imageUrl\":\"http:\\\\/\\\\/www.houluzhai.top\\\\/imgs\\\\/56be7cf503d34ce3bde58db4fa1ded65HarinaCoffee.jpg\",\"isCold\":1,\"isHot\":\"1\",\"strategyId\":66,\"id\":271,\"boxCode\":\"2号通道\",\"hotPrice\":3,\"price\":15,\"createTime\":\"2019-12-26 11:07:07\",\"libsId\":102,\"coldPrice\":0,\"boxId\":273,\"goodsName\":\"瑞幸咖啡\",\"created\":\"jakecy\",\"imagePath\":\"\"},{\"cupParam\":\"[{\\\"index\\\":0,\\\"value\\\":\\\"大杯\\\",\\\"isShow\\\":true,\\\"waterWeight\\\":\\\"20\\\",\\\"materialWeight\\\":\\\"10\\\",\\\"price\\\":\\\"10\\\"},{\\\"index\\\":1,\\\"value\\\":\\\"中杯\\\",\\\"isShow\\\":true,\\\"waterWeight\\\":\\\"30\\\",\\\"materialWeight\\\":\\\"20\\\",\\\"price\\\":\\\"5\\\"},{\\\"index\\\":2,\\\"value\\\":\\\"小杯\\\",\\\"isShow\\\":true,\\\"waterWeight\\\":\\\"35\\\",\\\"materialWeight\\\":\\\"30\\\",\\\"price\\\":\\\"0\\\"}]\",\"libsCupParam\":\"\",\"cupPrice\":\"\",\"updated\":\"\",\"imageUrl\":\"http:\\\\/\\\\/www.houluzhai.top\\\\/imgs\\\\/1e9d2b0fee4a4fdc96436cc017833890焦糖拿铁咖啡.jpg\",\"isHot\":\"1\",\"strategyId\":66,\"id\":272,\"boxCode\":\"3号通道\",\"hotPrice\":0,\"price\":13,\"createTime\":\"2019-12-26 11:07:07\",\"libsId\":102,\"boxId\":274,\"goodsName\":\"焦糖拿铁\",\"created\":\"jakecy\",\"imagePath\":\"\"}],\"companyName\":\"名捕科技有限公司(代理商)\",\"id\":66,\"libsName\":\"\",\"createTime\":\"2019-12-26 11:08:28\",\"libsId\":102,\"companyType\":1,\"strategyName\":\"元旦优惠价\",\"created\":\"jakecy\",\"companyId\":42},\"code\":200,\"success\":true}}";
+//
+//        KLog.setOnLogListener(new KLog.OnLogListener() {
+//            @Override
+//            public void onLog(String log) {
+////                Log.d("lis",log);
+//            }
+//        });
+//
+//        for (int i = 0; i < 100; i++) {
+//            KLog.json(str);
+//            Log.d("num","--------------------- "+i);
+//        }
+        File dir = new File("/sdcard/dwtest/");
+        if (!dir.exists()){
+            dir.mkdirs();
+        }
+        KLog.d("目录："+dir.exists());
 
-        KLog.setOnLogListener(new KLog.OnLogListener() {
+        OkDlManager.getInstance().addDlListener(1, new SimpleOkDlListener() {
             @Override
-            public void onLog(String log) {
-//                Log.d("lis",log);
+            public void onDownloadChanged(OkDlTask task) {
+               KLog.d("onDownloadChanged");
+
+            }
+
+            @Override
+            public void onProgress(OkDlTask task) {
+                super.onProgress(task);
+                long t = System.currentTimeMillis();
+                long d = t-time;
+                d = d/1000;
+                KLog.d(task.getFileName()+" - "+task.getTotalLength()+" - "+task.getCurrentLength()+" - "+((task.getCurrentLength()-p)/1024/d)+"kb/s");
+                p = task.getCurrentLength();
+
+                time = t;
+            }
+
+            @Override
+            public void onErrorMsg(String error) {
+                KLog.d("onErrorMsg: "+error);
             }
         });
-
-        for (int i = 0; i < 100; i++) {
-            KLog.json(str);
-            Log.d("num","--------------------- "+i);
-        }
+        DbUtil.clear(OkDlTask.class);
+//        http://www.houluzhai.top//videos//cf6d84ff6c5f40daa8ed9898747d38e9%E5%AE%A3%E4%BC%A0%E7%89%87.mp4
+//        OkDlManager.getInstance().addTask(1,"http://192.168.2.115/videos/news143_f296cd605ba671d369c11607e66b36af.mp4","/sdcard/dwtest");
+        OkDlManager.getInstance().addTask(1,"http://www.houluzhai.top//videos//cf6d84ff6c5f40daa8ed9898747d38e9%E5%AE%A3%E4%BC%A0%E7%89%87.mp4","/sdcard/dwtest");
     }
 
     public void btn2(View view){
+//        DbUtil.clear(OkDlTask.class);
+//        OkDlManager.getInstance().addTask(1,"http://192.168.2.115/videos/news143_f296cd605ba671d369c11607e66b36af.mp4","/sdcard/dwtest");
 
 //
 

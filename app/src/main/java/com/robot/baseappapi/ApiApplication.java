@@ -4,6 +4,7 @@ package com.robot.baseappapi;
 import android.widget.Toast;
 
 import com.ayit.klog.KLog;
+import com.robot.baseapi.FileDownloader.OkDlManager;
 import com.robot.baseapi.base.BaseApplication;
 import com.robot.baseapi.net.GlobalFilter;
 import com.robot.baseapi.net.NetWork;
@@ -43,22 +44,22 @@ public class ApiApplication extends BaseApplication {
 //
 //        });
 
-        OkHttpClient okHttpClient = new OkHttpClient.Builder()
-                .addInterceptor(new LoggerInterceptor("klog"))
-                .addInterceptor(new Interceptor() {
-                    @Override
-                    public Response intercept(Chain chain) throws IOException {
-
-
-
-                        return null;
-                    }
-                })
-                .connectTimeout(20000L, TimeUnit.MILLISECONDS)
-                .readTimeout(20000L, TimeUnit.MILLISECONDS)
-                //其他配置
-                .build();
-        OkHttpUtils.initClient(okHttpClient);
+//        OkHttpClient okHttpClient = new OkHttpClient.Builder()
+//                .addInterceptor(new LoggerInterceptor("klog"))
+//                .addInterceptor(new Interceptor() {
+//                    @Override
+//                    public Response intercept(Chain chain) throws IOException {
+//
+//
+//
+//                        return null;
+//                    }
+//                })
+//                .connectTimeout(20000L, TimeUnit.MILLISECONDS)
+//                .readTimeout(20000L, TimeUnit.MILLISECONDS)
+//                //其他配置
+//                .build();
+//        OkHttpUtils.initClient(okHttpClient);
 
     }
 }
