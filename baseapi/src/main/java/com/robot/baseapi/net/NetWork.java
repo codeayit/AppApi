@@ -182,7 +182,7 @@ public class NetWork {
         }
 
         public NetWorkParamsTagBulider addParam(String key, Object value) {
-            mParams.put(key, value.toString());
+            mParams.put(key,null==value?"":value.toString());
             return this;
         }
 
@@ -192,13 +192,13 @@ public class NetWork {
         }
 
         public NetWorkParamsTagBulider postStringObject(Object object) {
-            mParams.put("postString", JSON.toJSONString(object));
+            mParams.put("postString", null==object?new JSONObject().toJSONString():JSON.toJSONString(object));
             return this;
         }
 
 
         public NetWorkParamsTagBulider addHeader(String key, Object value) {
-            mHeaders.put(key, value.toString());
+            mHeaders.put(key,value==null ?"":value.toString());
             return this;
         }
 
@@ -209,12 +209,16 @@ public class NetWork {
          * @return
          */
         public NetWorkParamsTagBulider params(Map<String, String> params) {
-            mParams.putAll(params);
+            if (params!=null){
+                mParams.putAll(params);
+            }
             return this;
         }
 
         public NetWorkParamsTagBulider headers(Map<String, String> headers) {
-            mHeaders.putAll(headers);
+            if (headers!=null){
+                mHeaders.putAll(headers);
+            }
             return this;
         }
 
